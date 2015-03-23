@@ -48,3 +48,14 @@ bulkmarcimport_path: "/usr/share/koha/bin/migration_tools/bulkmarcimport.pl"
 # This is the name you gave to the site when you created it with koha-create, 
 # and the name that shows up when you do "koha-list".
 koha_site: "kohadev"
+
+### Dummy items
+
+# Homebranch
+952a: 'X'
+
+# Holdingbranch
+952b: 'X'
+
+# Item type
+952y: 'ONORDER'

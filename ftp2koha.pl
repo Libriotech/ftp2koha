@@ -13,6 +13,8 @@ ftp2koha.pl - Download MARC records from an FTP site and load them into Koha.
 =cut
 
 use Net::FTP;
+use MARC::File::USMARC;
+use MARC::File::XML;
 use YAML::Syck;
 use Getopt::Long;
 use Data::Dumper;
@@ -74,12 +76,26 @@ if ( ! -f $local_path ) {
 
 ## Massage the MARC data
 
+my $records = MARC::File::USMARC->in( $local_path );
+my $output_file = $local_path . '.marcxml';
+my $xmloutfile = MARC::File::XML->out( $output_file );
+while ( my $record = $records->next() ) {
 
+    my $field952 = MARC::Field->new( 952, ' ', ' ',
+        'a' => $config->{'952a'}, # Homebranch
+        'b' => $config->{'952b'}, # Holdingbranch
+        'y' => $config->{'952y'}, # Item type
+    );
+    $record->insert_fields_ordered( $field952 );
+    $xmloutfile->write($record);
+
+}
+$xmloutfile->close();
 
 ## Import the file into Koha
 
 my $bulkmarcimport_verbose = $verbose ? '-v' : '';
-my $cmd = "sudo koha-shell -c \"perl $config->{'bulkmarcimport_path'} -b $bulkmarcimport_verbose -file $local_path\" $config->{'koha_site'}";
+my $cmd = "sudo koha-shell -c \"perl $config->{'bulkmarcimport_path'} -b $bulkmarcimport_verbose -m=MARCXML -file $output_file\" $config->{'koha_site'}";
 if ( $verbose ) {
     say $cmd;
     say `$cmd` unless $test; # Do not perform the actual import if we have --test
@@ -93,6 +109,8 @@ if ( $verbose ) {
 if ( $config->{'cleanup'} ) {
     unlink $local_path;
     say "$local_path deleted" if $verbose;
+    unlink $output_file;
+    say "$output_file deleted" if $verbose;
 }
 
 say "*** This was a test run, no records were imported ***" if $test;

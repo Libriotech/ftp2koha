@@ -18,7 +18,7 @@ This script will
 
 =item * download a file containing MARC records
 
-=item * add a dummy item to each record (TODO!)
+=item * add a dummy item to each record
 
 =item * import the records into Koha, the free software integrated library system
 
