@@ -1,0 +1,50 @@
+---
+
+### Configure FTP
+
+# Host to connect to, e.g. ftp.example.com. Do not include the protocol
+ftp_host: "ftp.example.com"
+
+# Setting ftp_debug to 1 will give a lot of information about the FTP 
+# session. You probably do not want to use this in production
+# Options:
+#     0 = be quiet
+#     1 = show debug output
+ftp_debug: 0
+
+# Username and password for logging into the FTP server
+ftp_user: "anonymous"
+ftp_pass: "pass"
+
+# Path on the FTP server where the file we are looking for can be found
+ftp_path: "/path/to/file/"
+
+# Filename for the file we are looking for on the server
+# The filename is worked out using the DateTime Perl module, which means it
+# can contain "variables" related to year, month, date etc. 
+# See https://metacpan.org/pod/DateTime#strftime-Patterns for a full list
+# of variables. 
+# 
+# Example: "MyLib.%Y%m%d.marc" -> "MyLib.20150323.marc"
+# 
+ftp_file: "MyLib.%Y%m%d.marc"
+
+# Where do you want to store the downloaded file? Include trailing slash! 
+local_dir: "/tmp/"
+
+# Delete the downloaded file after it has been imported? 
+# Options:
+#     1 = yes, delete the file
+#     0 = no, keep the file
+cleanup: 1
+
+### Local Koha instance
+
+# Path to the bulkmarcimport.pl script. On a Debian package installation
+# this will be "/usr/share/koha/bin/migration_tools/bulkmarcimport.pl"
+bulkmarcimport_path: "/usr/share/koha/bin/migration_tools/bulkmarcimport.pl"
+
+# Site name of the Koha site you want to import the records into
+# This is the name you gave to the site when you created it with koha-create, 
+# and the name that shows up when you do "koha-list".
+koha_site: "kohadev"
