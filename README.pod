@@ -1,0 +1,74 @@
+=pod
+
+=head1 NAME
+
+ftp2koha.pl
+
+=head1 SYNOPSIS
+
+    perl ftp2koha.pl --config my_config.yml -v
+
+=head1 DESCRIPTION
+
+This script will
+
+=over 4
+
+=item * connect to an FTP server
+
+=item * download a file containing MARC records
+
+=item * add a dummy item to each record (TODO!)
+
+=item * import the records into Koha, the free software integrated library system
+
+=item * optionally delete the downloaded file
+
+=back
+
+The script is designed to be run from cron at set intervals, like each night.
+
+=head1 DOCUMENTATION
+
+See C<perldoc ftp2koha.pl> for a full list of options etc. 
+
+=head1 SPONSORS
+
+Initial development of this script was funded by 
+
+=over 4
+
+=item * Hylte public library
+
+=item * Halland Regional Library
+
+=back
+
+=head1 ABOUT KOHA
+
+Koha is a fully featured, scalable library management system. Development is 
+sponsored by libraries of varying types and sizes, volunteers, and support 
+companies worldwide.
+
+See L<http://koha-community.org/> for more information.
+
+=head1 AUTHOR
+
+Magnus Enger, magnus [at] libriotech.no
+
+=head1 LICENSE
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+=cut
