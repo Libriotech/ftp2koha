@@ -50,7 +50,7 @@ my $config = LoadFile( $config_file );
 # Figure out the filename and the local path for saving it
 if ( $filename eq '' ) {
     # Construct the filename from the ftp_file config variable
-    $filename = DateTime->now->strftime( $config->{'ftp_file'} );
+    $filename = DateTime->now->subtract( hours => $config->{'subtract_hours'} )->strftime( $config->{'ftp_file'} );
 }
 my $local_path = $config->{'local_dir'} . $filename;
 say "Going to download $filename to $local_path" if $verbose;

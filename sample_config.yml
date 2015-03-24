@@ -29,6 +29,15 @@ ftp_path: "/path/to/file/"
 # 
 ftp_file: "MyLib.%Y%m%d.marc"
 
+# Number of hours that should be subtracted from the time at which the script
+# is run, in order to calculate the date part of the filename above.
+# Example: A new file is published at 2am each night, but the date part of the
+# filename is for the day before the current day. So the file published on
+# 2015-03-24 has 2015-03-23 (in some form) as the date part of the filename.
+# Set this variable to 24 to account for this.
+# If files are dated to the same date they are published, just leave this as 0.
+subtract_hours: 0
+
 # Where do you want to store the downloaded file? Include trailing slash! 
 local_dir: "/tmp/"
 
