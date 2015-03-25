@@ -76,6 +76,8 @@ if ( ! -f $local_path ) {
 
 ## Massage the MARC data
 
+say "Starting to massage MARC records" if $verbose;
+my $records_count = 0;
 my $records = MARC::File::USMARC->in( $local_path );
 my $output_file = $local_path . '.marcxml';
 my $xmloutfile = MARC::File::XML->out( $output_file );
@@ -88,9 +90,12 @@ while ( my $record = $records->next() ) {
     );
     $record->insert_fields_ordered( $field952 );
     $xmloutfile->write($record);
+    $records_count++;
+    say "$records_count: " . $record->title if $verbose;
 
 }
 $xmloutfile->close();
+say "Done ($records_count records)" if $verbose;
 
 ## Import the file into Koha
 
