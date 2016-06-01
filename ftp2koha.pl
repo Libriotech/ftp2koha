@@ -74,6 +74,15 @@ if ( ! -f $local_path ) {
     say "Local file $local_path exists" if $verbose;
 }
 
+## Check if the data is compressed, and uncompress
+# This code has not been tested!
+# my $ae = Archive::Extract->new( archive => $local_path );
+# if ( $ae->is_gz ) {
+#     my $ok = $ae->extract( to => $config->{'local_dir'} );
+#     say "Data was extracted to " . $config->{'local_dir'} if ( $ok && $verbose );
+#     $local_path =~ s/\.gz$//;
+# }
+
 ## Massage the MARC data
 
 say "Starting to massage MARC records" if $verbose;
