@@ -109,7 +109,7 @@ say "Done ($records_count records)" if $verbose;
 ## Import the file into Koha
 
 my $bulkmarcimport_verbose = $verbose ? '-v' : '';
-my $cmd = "sudo koha-shell -c \"perl $config->{'bulkmarcimport_path'} -b $bulkmarcimport_verbose -m=MARCXML -file $output_file\" $config->{'koha_site'}";
+my $cmd = "/usr/sbin/koha-shell -c \"perl $config->{'bulkmarcimport_path'} -b $bulkmarcimport_verbose -m=MARCXML -file $output_file\" $config->{'koha_site'}";
 if ( $verbose ) {
     say $cmd;
     say `$cmd` unless $test; # Do not perform the actual import if we have --test
