@@ -83,15 +83,39 @@ my $output_file = $local_path . '.marcxml';
 my $xmloutfile = MARC::File::XML->out( $output_file );
 while ( my $record = $records->next() ) {
 
-    my $field952 = MARC::Field->new( 952, ' ', ' ',
-        'a' => $config->{'952a'}, # Homebranch
-        'b' => $config->{'952b'}, # Holdingbranch
-        'y' => $config->{'952y'}, # Item type
-    );
+    my $itemdetails = '';
+    my $field952;
+
+    # Check if there are items that should be treated in a special way
+    if ( $config->{'special_items'} ) {
+        foreach my $special ( @{ $config->{'special_items'} } ) {
+            if ( $record->field( $special->{'field'} ) && $record->subfield( $special->{'field'}, $special->{'subfield'} ) && $record->subfield( $special->{'field'}, $special->{'subfield'} ) =~ m/$special->{'text'}/gi ) {
+                $field952 = MARC::Field->new( 952, ' ', ' ',
+                    'a' => $special->{'952a'}, # Homebranch
+                    'b' => $special->{'952b'}, # Holdingbranch
+                    'y' => $special->{'952y'}, # Item type
+                );
+                $itemdetails = "$special->{'952a'} $special->{'952b'} $special->{'952y'}";
+                last; # Make sure we only add an item for the first match
+            }
+        }
+    }
+
+    # If $itemdetails is still empty, none of the special cases took effect
+    if ( $itemdetails eq '' ) {
+        # The rest of the items get the default values
+        $field952 = MARC::Field->new( 952, ' ', ' ',
+            'a' => $config->{'952a'}, # Homebranch
+            'b' => $config->{'952b'}, # Holdingbranch
+            'y' => $config->{'952y'}, # Item type
+        );
+        $itemdetails = "$config->{'952a'} $config->{'952b'} $config->{'952y'}";
+    }
+
     $record->insert_fields_ordered( $field952 );
     $xmloutfile->write($record);
     $records_count++;
-    say "$records_count: " . $record->title if $verbose;
+    say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
 
 }
 $xmloutfile->close();

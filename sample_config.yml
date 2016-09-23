@@ -58,13 +58,20 @@ bulkmarcimport_path: "/usr/share/koha/bin/migration_tools/bulkmarcimport.pl"
 # and the name that shows up when you do "koha-list".
 koha_site: "kohadev"
 
-### Dummy items
+### Special item values
 
-# Homebranch
-952a: 'X'
+# Look for 'text' in 'field' and 'subfield'
 
-# Holdingbranch
-952b: 'X'
+special_items: 
+ - field: 245
+   subfield: h
+   text: "Electronic resource"
+   952a: 'Y'
+   952b: 'Y'
+   952y: 'EBOOK'
 
-# Item type
-952y: 'ONORDER'
+### Default item values
+
+952a: 'X' # Homebranch
+952b: 'X' # Holdingbranch
+952y: 'ONORDER' # Item type
