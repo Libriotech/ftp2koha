@@ -12,7 +12,7 @@ ftp2koha.pl - Download MARC records from an FTP site and load them into Koha.
 
 =cut
 
-use Net::FTP;
+# use Net::FTP;
 use MARC::File::USMARC;
 use MARC::File::XML;
 use YAML::Syck;
@@ -56,16 +56,20 @@ my $local_path = $config->{'local_dir'} . $filename;
 say "Going to download $filename to $local_path" if $verbose;
 
 # Do the actual download
-my $ftp = Net::FTP->new(
-    $config->{'ftp_host'},
-    'Debug' => $config->{'ftp_debug'}
-) or die "Cannot connect to $config->{'ftp_host'}: $@";
-$ftp->binary();
-$ftp->login( $config->{'ftp_user'}, $config->{'ftp_pass'} ) or die "Cannot login ", $ftp->message;
-$ftp->cwd( $config->{'ftp_path'} ) or die "Cannot change working directory ", $ftp->message;
-$ftp->get( $filename, $local_path ) or die "Get failed ", $ftp->message;
-$ftp->quit;
-say "Download done" if $verbose;
+# my $ftp = Net::FTP->new(
+#     $config->{'ftp_host'},
+#     'Debug' => $config->{'ftp_debug'}
+# ) or die "Cannot connect to $config->{'ftp_host'}: $@";
+# $ftp->binary();
+# $ftp->login( $config->{'ftp_user'}, $config->{'ftp_pass'} ) or die "Cannot login ", $ftp->message;
+# $ftp->cwd( $config->{'ftp_path'} ) or die "Cannot change working directory ", $ftp->message;
+# $ftp->get( $filename, $local_path ) or die "Get failed ", $ftp->message;
+# $ftp->quit;
+# say "Download done" if $verbose;
+
+my $ftp = "wget -O $local_path ftp://" . $config->{'ftp_host'} . $config->{'ftp_path'} . $filename;
+say "Going to do $ftp" if $verbose;
+`$ftp`;
 
 # Check that the file now exists locally
 if ( ! -f $local_path ) {
