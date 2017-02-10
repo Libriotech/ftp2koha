@@ -23,6 +23,7 @@ use Pod::Usage;
 use Modern::Perl;
 
 my $dt = DateTime->now;
+my $date = $dt->ymd;
 
 # Get options
 my ( $config_file, $filename, $test, $verbose, $debug ) = get_options();
@@ -92,12 +93,18 @@ if ( ! -f $local_path ) {
 say "Starting to massage MARC records" if $verbose;
 my $records_count = 0;
 my $records = MARC::File::USMARC->in( $local_path );
-my $output_file = $local_path . '.marcxml';
-my $xmloutfile = MARC::File::XML->out( $output_file );
+
+my $marcxml_with_items    = $local_path . '-with-items.marcxml';
+my $marcxml_without_items = $local_path . '-without-items.marcxml';
+
+my $xml_with_items    = MARC::File::XML->out( $marcxml_with_items );
+my $xml_without_items = MARC::File::XML->out( $marcxml_without_items );
 while ( my $record = $records->next() ) {
 
     my $itemdetails = '';
     my $field952;
+
+    $xml_without_items->write($record);
 
     # Check if there are items that should be treated in a special way
     if ( $config->{'special_items'} ) {
@@ -126,24 +133,30 @@ while ( my $record = $records->next() ) {
     }
 
     $record->insert_fields_ordered( $field952 );
-    $xmloutfile->write($record);
+    $xml_with_items->write($record);
     $records_count++;
     say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
 
 }
-$xmloutfile->close();
+$xml_with_items->close();
+$xml_without_items->close();
 say "Done ($records_count records)" if $verbose;
 
 ## Import the file into Koha
 
 my $bulkmarcimport_verbose = $verbose ? '-v' : '';
-my $cmd = "/usr/sbin/koha-shell -c \"perl $config->{'bulkmarcimport_path'} -b $bulkmarcimport_verbose -m=MARCXML -file $output_file\" $config->{'koha_site'}";
+my $cmd1 = "/usr/sbin/koha-shell -c \"perl $config->{'bulkmarcimport_path'} -b $bulkmarcimport_verbose -m=MARCXML -match=Control-number,001 -insert -l=/tmp/ftp2koha-insert-$date.log -file $marcxml_with_items\" $
+my $cmd2 = "/usr/sbin/koha-shell -c \"perl $config->{'bulkmarcimport_path'} -b $bulkmarcimport_verbose -m=MARCXML -match=Control-number,001 -update -l=/tmp/ftp2koha-update-$date.log -file $marcxml_without_items\
 if ( $verbose ) {
-    say $cmd;
-    say `$cmd` unless $test; # Do not perform the actual import if we have --test
-    say "Import done";
+    say $cmd1;
+    say `$cmd1` unless $test; # Do not perform the actual import if we have --test
+    say "Import stage 1 of 2 done";
+    say $cmd2;
+    say `$cmd2` unless $test; # Do not perform the actual import if we have --test
+    say "Import stage 2 of 2 done";
 } else {
-    `$cmd`;
+    `$cmd1`;
+    `$cmd2`;
 }
 
 ## Optional cleanup
@@ -151,8 +164,10 @@ if ( $verbose ) {
 if ( $config->{'cleanup'} ) {
     unlink $local_path;
     say "$local_path deleted" if $verbose;
-    unlink $output_file;
-    say "$output_file deleted" if $verbose;
+    unlink $marcxml_with_items;
+    say "$marcxml_with_items deleted" if $verbose;
+    unlink $marcxml_without_items;
+    say "$marcxml_without_items deleted" if $verbose;
 }
 
 say "*** This was a test run, no records were imported ***" if $test;
