@@ -154,8 +154,8 @@ say "Done ($records_count records)" if $verbose;
 ## Import the file into Koha
 
 my $bulkmarcimport_verbose = $verbose ? '-v' : '';
-my $cmd1 = "/usr/sbin/koha-shell -c \"perl $config->{'bulkmarcimport_path'} -b $bulkmarcimport_verbose -m=MARCXML -match=Control-number,001 -insert -l=/tmp/ftp2koha-insert-$date.log -file $marcxml_with_items\" $config->{'koha_site'}";
-my $cmd2 = "/usr/sbin/koha-shell -c \"perl $config->{'bulkmarcimport_path'} -b $bulkmarcimport_verbose -m=MARCXML -match=Control-number,001 -update -l=/tmp/ftp2koha-update-$date.log -file $marcxml_without_items\" $config->{'koha_site'}";
+my $cmd1 = "/usr/sbin/koha-shell -c \"perl $config->{'bulkmarcimport_path'} -b $bulkmarcimport_verbose -m=MARCXML -match=Control-number,001 -update -l=/tmp/ftp2koha-insert-$date.log -file $marcxml_with_items\" $config->{'koha_site'}";
+my $cmd2 = "/usr/sbin/koha-shell -c \"perl $config->{'bulkmarcimport_path'} -b $bulkmarcimport_verbose -m=MARCXML -match=Control-number,001 -insert -l=/tmp/ftp2koha-update-$date.log -file $marcxml_without_items\" $config->{'koha_site'}";
 if ( $verbose ) {
     say $cmd1;
     say `$cmd1` unless $test; # Do not perform the actual import if we have --test
