@@ -14,13 +14,16 @@ ftp2koha.pl - Download MARC records from an FTP site and load them into Koha.
 
 # use Net::FTP;
 use MARC::File::USMARC;
-use MARC::File::XML;
+use MARC::File::XML ( BinaryEncoding => 'utf8', RecordFormat => 'UNIMARC' );
 use YAML::Syck;
 use Getopt::Long;
 use Data::Dumper;
 use DateTime;
 use Pod::Usage;
 use Modern::Perl;
+
+binmode STDOUT, ":utf8";
+$|=1; # Flush output
 
 my $dt = DateTime->now;
 my $date = $dt->ymd;
@@ -92,7 +95,13 @@ if ( ! -s $local_path ) {
 
 say "Starting to massage MARC records" if $verbose;
 my $records_count = 0;
-my $records = MARC::File::USMARC->in( $local_path );
+my $records;
+
+if ( $filename =~ m/xml$/i ) {
+    $records = MARC::File::XML->in( $local_path );
+} else {
+    $records = MARC::File::USMARC->in( $local_path );
+}
 
 my $marcxml_with_items    = $local_path . '-with-items.marcxml';
 my $marcxml_without_items = $local_path . '-without-items.marcxml';
