@@ -72,8 +72,8 @@ my $ftp = "wget -O $local_path ftp://" . $config->{'ftp_host'} . $config->{'ftp_
 say "Going to do $ftp" if $verbose;
 `$ftp`;
 
-# Check that the file now exists locally
-if ( ! -f $local_path ) {
+# Check that the file now exists locally, and has a non-zero size
+if ( ! -s $local_path ) {
     die "$local_path does not exist!";
 } else {
     say "Local file $local_path exists" if $verbose;
