@@ -69,9 +69,11 @@ special_items:
    952a: 'Y'
    952b: 'Y'
    952y: 'EBOOK'
+   9527: '0' # Zero is "available"
 
 ### Default item values
 
 952a: 'X' # Homebranch
 952b: 'X' # Holdingbranch
 952y: 'ONORDER' # Item type
+9527: '-1' # -1 is "On order", but avaialable for holds

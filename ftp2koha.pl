@@ -123,6 +123,7 @@ while ( my $record = $records->next() ) {
                     'a' => $special->{'952a'}, # Homebranch
                     'b' => $special->{'952b'}, # Holdingbranch
                     'y' => $special->{'952y'}, # Item type
+                    '7' => $special->{'9527'}, # Not for loan
                 );
                 $itemdetails = "$special->{'952a'} $special->{'952b'} $special->{'952y'}";
                 last; # Make sure we only add an item for the first match
@@ -137,6 +138,7 @@ while ( my $record = $records->next() ) {
             'a' => $config->{'952a'}, # Homebranch
             'b' => $config->{'952b'}, # Holdingbranch
             'y' => $config->{'952y'}, # Item type
+            '7' => $config->{'9527'}, # Not for loan
         );
         $itemdetails = "$config->{'952a'} $config->{'952b'} $config->{'952y'}";
     }
