@@ -80,38 +80,26 @@ if ( $local_file ) {
 
 }
 
-## Check if the data is compressed, and uncompress
-# This code has not been tested!
-# my $ae = Archive::Extract->new( archive => $local_path );
-# if ( $ae->is_gz ) {
-#     my $ok = $ae->extract( to => $config->{'local_dir'} );
-#     say "Data was extracted to " . $config->{'local_dir'} if ( $ok && $verbose );
-#     $local_path =~ s/\.gz$//;
-# }
+say "Going to use $local_path" if $verbose;
 
-## Massage the MARC data
+## Import the data into Koha
 
 say "Starting to massage MARC records" if $verbose;
 my $records_count = 0;
 my $records;
 
-if ( $filename =~ m/xml$/i ) {
+if ( $local_path =~ m/xml$/i ) {
+    say "Got a MARCXML file" if $verbose;
     $records = MARC::File::XML->in( $local_path );
 } else {
+    say "Got an ISO2709 file" if $verbose;
     $records = MARC::File::USMARC->in( $local_path );
 }
 
-my $marcxml_with_items    = $local_path . '-with-items.marcxml';
-my $marcxml_without_items = $local_path . '-without-items.marcxml';
-
-my $xml_with_items    = MARC::File::XML->out( $marcxml_with_items );
-my $xml_without_items = MARC::File::XML->out( $marcxml_without_items );
 while ( my $record = $records->next() ) {
 
     my $itemdetails = '';
     my $field952;
-
-    $xml_without_items->write($record);
 
     # Check if there are items that should be treated in a special way
     if ( $config->{'special_items'} ) {
@@ -142,41 +130,19 @@ while ( my $record = $records->next() ) {
     }
 
     $record->insert_fields_ordered( $field952 );
-    $xml_with_items->write($record);
     $records_count++;
     say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
 
 }
-$xml_with_items->close();
-$xml_without_items->close();
 say "Done ($records_count records)" if $verbose;
 
-## Import the file into Koha
-
-my $bulkmarcimport_verbose = $verbose ? '-v' : '';
-my $cmd1 = "/usr/sbin/koha-shell -c \"perl $config->{'bulkmarcimport_path'} -b $bulkmarcimport_verbose -m=MARCXML -match=Control-number,001 -update -l=/tmp/ftp2koha-update-$date.log -file $marcxml_without_items\" $config->{'koha_site'}";
-my $cmd2 = "/usr/sbin/koha-shell -c \"perl $config->{'bulkmarcimport_path'} -b $bulkmarcimport_verbose -m=MARCXML -match=Control-number,001 -insert -l=/tmp/ftp2koha-insert-$date.log -file $marcxml_with_items\" $config->{'koha_site'}";
-if ( $verbose ) {
-    say $cmd1;
-    say `$cmd1` unless $test; # Do not perform the actual import if we have --test
-    say "Import stage 1 of 2 done";
-    say $cmd2;
-    say `$cmd2` unless $test; # Do not perform the actual import if we have --test
-    say "Import stage 2 of 2 done";
-} else {
-    `$cmd1`;
-    `$cmd2`;
-}
+## Import the records into Koha
 
 ## Optional cleanup
 
 if ( $config->{'cleanup'} ) {
     unlink $local_path;
     say "$local_path deleted" if $verbose;
-    unlink $marcxml_with_items;
-    say "$marcxml_with_items deleted" if $verbose;
-    unlink $marcxml_without_items;
-    say "$marcxml_without_items deleted" if $verbose;
 }
 
 say "*** This was a test run, no records were imported ***" if $test;
