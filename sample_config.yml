@@ -73,7 +73,7 @@ special_items:
 
 ### Default item values
 
-952a: 'X' # Homebranch
-952b: 'X' # Holdingbranch
+952a: 'ONORDER' # Homebranch
+952b: 'ONORDER' # Holdingbranch
 952y: 'ONORDER' # Item type
 9527: '-1' # -1 is "On order", but avaialable for holds
