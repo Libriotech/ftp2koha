@@ -1,0 +1,17 @@
+=pod
+
+=head1 data/
+
+This directory contains some data that could be useful when developing and
+testing ftp2koha.
+
+Usage for all .sql files are as follows:
+
+  sudo koha-mysql kohadev < setup.sql
+
+=head2 setup.sql
+
+Adds some libraries and itemtypes that makes it easier to do testing. This
+should only be loaded once, to get the environment set up.
+
+=cut
