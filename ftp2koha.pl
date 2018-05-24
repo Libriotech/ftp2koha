@@ -29,7 +29,7 @@ my $dt = DateTime->now;
 my $date = $dt->ymd;
 
 # Get options
-my ( $config_file, $filename, $test, $verbose, $debug ) = get_options();
+my ( $config_file, $filename, $local_file, $test, $verbose, $debug ) = get_options();
 
 =pod
 
@@ -47,39 +47,37 @@ if ( !-e $config_file ) {
     exit;
 }
 say "Using config from $config_file" if $verbose;
+# Load the config
 my $config = LoadFile( $config_file );
 
-##  Get the file
+my $local_path;
+if ( $local_file ) {
 
-# Figure out the filename and the local path for saving it
-if ( $filename eq '' ) {
-    # Construct the filename from the ftp_file config variable
-    $filename = DateTime->now->subtract( hours => $config->{'subtract_hours'} )->strftime( $config->{'ftp_file'} );
-}
-my $local_path = $config->{'local_dir'} . $filename;
-say "Going to download $filename to $local_path" if $verbose;
+    # We are using a local file
+    $local_path = $local_file;
 
-# Do the actual download
-# my $ftp = Net::FTP->new(
-#     $config->{'ftp_host'},
-#     'Debug' => $config->{'ftp_debug'}
-# ) or die "Cannot connect to $config->{'ftp_host'}: $@";
-# $ftp->binary();
-# $ftp->login( $config->{'ftp_user'}, $config->{'ftp_pass'} ) or die "Cannot login ", $ftp->message;
-# $ftp->cwd( $config->{'ftp_path'} ) or die "Cannot change working directory ", $ftp->message;
-# $ftp->get( $filename, $local_path ) or die "Get failed ", $ftp->message;
-# $ftp->quit;
-# say "Download done" if $verbose;
-
-my $ftp = "wget -O $local_path ftp://" . $config->{'ftp_host'} . $config->{'ftp_path'} . $filename;
-say "Going to do $ftp" if $verbose;
-`$ftp`;
-
-# Check that the file now exists locally, and has a non-zero size
-if ( ! -s $local_path ) {
-    die "$local_path does not exist!";
 } else {
-    say "Local file $local_path exists" if $verbose;
+
+    # Figure out the filename and the local path for saving it
+    if ( $filename eq '' ) {
+        # Construct the filename from the ftp_file config variable
+        $filename = DateTime->now->subtract( hours => $config->{'subtract_hours'} )->strftime( $config->{'ftp_file'} );
+    }
+    $local_path = $config->{'local_dir'} . $filename;
+    say "Going to download $filename to $local_path" if $verbose;
+
+    # Do the actual download (with wget)
+    my $ftp = "wget -O $local_path ftp://" . $config->{'ftp_host'} . $config->{'ftp_path'} . $filename;
+    say "Going to do $ftp" if $verbose;
+    `$ftp`;
+
+    # Check that the file now exists locally, and has a non-zero size
+    if ( ! -s $local_path ) {
+        die "$local_path does not exist!";
+    } else {
+        say "Local file $local_path exists" if $verbose;
+    }
+
 }
 
 ## Check if the data is compressed, and uncompress
@@ -193,15 +191,19 @@ Path to config file.
 
 =item B<-f, --filename>
 
-Provide a specific filename to look for on the FTP server. This will override 
+Provide a specific filename to look for on the FTP server. This will override
 the filename created from the B<ftp_file> config variable.
 
-This is useful if you need to download files that are older than the current 
+This is useful if you need to download files that are older than the current
 date, or if the remote file always has the same name, regardless of the date.
+
+=item B<-l, --localfile>
+
+Use a local file for testing and development.
 
 =item B<-t, --test>
 
-Perform all steps, except the actual import of records. Also turns on verbose 
+Perform all steps, except the actual import of records. Also turns on verbose
 mode.
 
 =item B<-v --verbose>
@@ -225,18 +227,20 @@ sub get_options {
     # Options
     my $config_file = '';
     my $filename    = '';
+    my $local_file  = '';
     my $test        = '';
     my $verbose     = '';
     my $debug       = '';
     my $help        = '';
 
     GetOptions (
-        'c|config=s'   => \$config_file,
-        'f|filename=s' => \$filename,
-        't|test'       => \$test,
-        'v|verbose'    => \$verbose,
-        'd|debug'      => \$debug,
-        'h|?|help'     => \$help
+        'c|config=s'    => \$config_file,
+        'f|filename=s'  => \$filename,
+        'l|localfile=s' => \$local_file,
+        't|test'        => \$test,
+        'v|verbose'     => \$verbose,
+        'd|debug'       => \$debug,
+        'h|?|help'      => \$help
     );
 
     pod2usage( -exitval => 0 ) if $help;
@@ -245,7 +249,7 @@ sub get_options {
     # Test mode should always be verbose
     $verbose = 1 if $test;
 
-    return ( $config_file, $filename, $test, $verbose, $debug );
+    return ( $config_file, $filename, $local_file, $test, $verbose, $debug );
 
 }
 
