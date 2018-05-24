@@ -101,6 +101,10 @@ while ( my $record = $records->next() ) {
     my $itemdetails = '';
     my $field952;
 
+    # Check if the record we have is already in Koha
+    say "------------------------------" if $verbose;
+    say "ID from 001: " . $record->field('001')->data() if $verbose;
+
     # Check if there are items that should be treated in a special way
     if ( $config->{'special_items'} ) {
         foreach my $special ( @{ $config->{'special_items'} } ) {
