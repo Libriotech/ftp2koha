@@ -22,6 +22,10 @@ use DateTime;
 use Pod::Usage;
 use Modern::Perl;
 
+use C4::Context;
+use C4::Biblio;
+use C4::Items;
+
 binmode STDOUT, ":utf8";
 $|=1; # Flush output
 
@@ -96,44 +100,93 @@ if ( $local_path =~ m/xml$/i ) {
     $records = MARC::File::USMARC->in( $local_path );
 }
 
+my $dbh = C4::Context->dbh;
+
 while ( my $record = $records->next() ) {
 
-    my $itemdetails = '';
-    my $field952;
-
     # Check if the record we have is already in Koha
+    my $id_001 = $record->field('001')->data();
     say "------------------------------" if $verbose;
-    say "ID from 001: " . $record->field('001')->data() if $verbose;
+    say "ID from 001: $id_001" if $verbose;
 
-    # Check if there are items that should be treated in a special way
-    if ( $config->{'special_items'} ) {
-        foreach my $special ( @{ $config->{'special_items'} } ) {
-            if ( $record->field( $special->{'field'} ) && $record->subfield( $special->{'field'}, $special->{'subfield'} ) && $record->subfield( $special->{'field'}, $special->{'subfield'} ) =~ m/$special->{'text'}/gi ) {
-                $field952 = MARC::Field->new( 952, ' ', ' ',
-                    'a' => $special->{'952a'}, # Homebranch
-                    'b' => $special->{'952b'}, # Holdingbranch
-                    'y' => $special->{'952y'}, # Item type
-                    '7' => $special->{'9527'}, # Not for loan
-                );
-                $itemdetails = "$special->{'952a'} $special->{'952b'} $special->{'952y'}";
-                last; # Make sure we only add an item for the first match
+    my $sth = $dbh->prepare("SELECT biblionumber FROM biblio_metadata WHERE metadata LIKE '%$id_001%'");
+    $sth->execute();
+    my $hits = $sth->fetchall_arrayref;
+    print Dumper $hits;
+
+    my $itemdetails = '';
+
+    # Procees according to the number of hits found
+    if ( scalar @{ $hits } == 0 ) {
+        say "We have a new record, going to INSERT it." if $verbose;
+
+        # We should add items according to the config file
+        my $item;
+
+        # Check if there are items that should be treated in a special way
+        if ( $config->{'special_items'} ) { 
+            foreach my $special ( @{ $config->{'special_items'} } ) { 
+                if ( $record->field( $special->{'field'} ) && $record->subfield( $special->{'field'}, $special->{'subfield'} ) && $record->subfield( $special->{'field'}, $special->{'subfield'} ) =~ m/$special->{'text'}/gi ) {
+                    $item = {
+                        'homebranch'    => $special->{'952a'}, # Homebranch
+                        'holdingbranch' => $special->{'952b'}, # Holdingbranch
+                        'itype'         => $special->{'952y'}, # Item type
+                        'notforloan'    => $special->{'9527'}, # Not for loan
+                        };
+                    $itemdetails = "$special->{'952a'} $special->{'952b'} $special->{'952y'}";
+                    last; # Make sure we only add an item for the first match
+                }
             }
+        }
+
+        # If $itemdetails is still empty, none of the special cases took effect so we add a standard item
+        if ( $itemdetails eq '' ) {
+            # The rest of the items get the default values
+            $item = {
+                'homebranch'    => $config->{'952a'}, # Homebranch
+                'holdingbranch' => $config->{'952b'}, # Holdingbranch
+                'itype'         => $config->{'952y'}, # Item type
+                'notforloan'    => $config->{'9527'}, # Not for loan
+            };
+            $itemdetails = "$config->{'952a'} $config->{'952b'} $config->{'952y'}";
+        }
+
+        # Add the item to the record
+        # $record->insert_fields_ordered( $field952 );
+
+        # Import the record and the item into Koha
+        my ( $biblionumber, $biblioitemnumber ) = AddBiblio( $record, $config->{'frameworkcode'} );
+        if ( $biblionumber ) {
+            say "New record saved with biblionumber = $biblionumber" if $verbose;
+        } else {
+            say "Ooops, something went wrong while saving the record!" if $verbose;
+        }
+
+        # Import the item
+        my $itemnumber;
+        ( $biblionumber, $biblioitemnumber, $itemnumber ) = AddItem($item, $biblionumber);
+        if ( $itemnumber  ) {
+            say "Added item with itemnumber = $itemnumber";
+        } else {
+            say "Ooops, something went wrong while saving the item";
+        }
+
+
+    } else {
+        say "We have an existing record, going to UPDATE it." if $verbose;
+        if ( scalar @{ $hits } > 1 ) {
+            say "PROBLEM: More than 1 hit for 001 = $id_001";
+        }
+        # We use the first one, even if there were more than 1
+        my $biblionumber = $hits->[0]->[0];
+        my $res = ModBiblio( $record, $biblionumber, $config->{'frameworkcode'} );
+        if ( $res == 1 ) {
+            say "Record with biblionumber = $biblionumber was UPDATED";
+        } else {
+            say "Record with biblionumber = $biblionumber was NOT updated";
         }
     }
 
-    # If $itemdetails is still empty, none of the special cases took effect
-    if ( $itemdetails eq '' ) {
-        # The rest of the items get the default values
-        $field952 = MARC::Field->new( 952, ' ', ' ',
-            'a' => $config->{'952a'}, # Homebranch
-            'b' => $config->{'952b'}, # Holdingbranch
-            'y' => $config->{'952y'}, # Item type
-            '7' => $config->{'9527'}, # Not for loan
-        );
-        $itemdetails = "$config->{'952a'} $config->{'952b'} $config->{'952y'}";
-    }
-
-    $record->insert_fields_ordered( $field952 );
     $records_count++;
     say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
 
