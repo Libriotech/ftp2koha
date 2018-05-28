@@ -5,7 +5,7 @@
   xmlns="http://www.loc.gov/MARC21/slim">
 <record>
   <leader>02464nim a22003733a 4500</leader>
-  <controlfield tag="001">2244668800</controlfield>
+  <controlfield tag="001">MySpecial001</controlfield>
   <controlfield tag="003">SE-LIBR</controlfield>
   <datafield tag="100" ind1="1" ind2=" ">
     <subfield code="a">Nordmann, Ola</subfield>
