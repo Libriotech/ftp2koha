@@ -54,6 +54,9 @@ cleanup: 1
 # and the name that shows up when you do "koha-list".
 koha_site: "kohadev"
 
+# Code for the framework the records should be imported with
+frameworkcode: ""
+
 ### Special item values
 
 # Look for 'text' in 'field' and 'subfield'
