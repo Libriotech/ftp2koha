@@ -212,7 +212,8 @@ say "*** This was a test run, no records were imported ***" if $test;
 
 =item B<-c, --config_file>
 
-Path to config file.
+Path to config file. See F<sample_config.yml> for an example with extensive
+comments describing all the config variables.
 
 =item B<-f, --filename>
 
