@@ -49,11 +49,6 @@ cleanup: 1
 
 ### Local Koha instance
 
-# Site name of the Koha site you want to import the records into
-# This is the name you gave to the site when you created it with koha-create, 
-# and the name that shows up when you do "koha-list".
-koha_site: "kohadev"
-
 # Code for the framework the records should be imported with
 frameworkcode: ""
 
