@@ -112,7 +112,7 @@ while ( my $record = $records->next() ) {
     my $sth = $dbh->prepare("SELECT biblionumber FROM biblio_metadata WHERE metadata LIKE '%$id_001%'");
     $sth->execute();
     my $hits = $sth->fetchall_arrayref;
-    print Dumper $hits;
+    print Dumper $hits if $debug;
 
     my $itemdetails = '';
 
@@ -166,31 +166,33 @@ while ( my $record = $records->next() ) {
         my $itemnumber;
         ( $biblionumber, $biblioitemnumber, $itemnumber ) = AddItem($item, $biblionumber);
         if ( $itemnumber  ) {
-            say "Added item with itemnumber = $itemnumber";
+            say "Added item with itemnumber = $itemnumber" if $verbose;
         } else {
-            say "Ooops, something went wrong while saving the item";
+            say "Ooops, something went wrong while saving the item" if $verbose;
         }
 
 
     } else {
         say "We have an existing record, going to UPDATE it." if $verbose;
         if ( scalar @{ $hits } > 1 ) {
-            say "PROBLEM: More than 1 hit for 001 = $id_001";
+            say "PROBLEM: More than 1 hit for 001 = $id_001" if $verbose;
         }
         # We use the first one, even if there were more than 1
         my $biblionumber = $hits->[0]->[0];
         my $res = ModBiblio( $record, $biblionumber, $config->{'frameworkcode'} );
         if ( $res == 1 ) {
-            say "Record with biblionumber = $biblionumber was UPDATED";
+            say "Record with biblionumber = $biblionumber was UPDATED" if $verbose;
         } else {
             say "Record with biblionumber = $biblionumber was NOT updated";
         }
+        $itemdetails = 'No items changed';
     }
 
     $records_count++;
     say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
 
 }
+say "------------------------------" if $verbose;
 say "Done ($records_count records)" if $verbose;
 
 ## Import the records into Koha
