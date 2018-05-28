@@ -6,7 +6,7 @@ ftp2koha.pl
 
 =head1 SYNOPSIS
 
-    perl ftp2koha.pl --config my_config.yml -v
+    sudo koha-shell -c "perl ftp2koha.pl --config my_config.yml -v" kohadev
 
 =head1 DESCRIPTION
 
