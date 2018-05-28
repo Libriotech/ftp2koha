@@ -105,8 +105,8 @@ my $dbh = C4::Context->dbh;
 while ( my $record = $records->next() ) {
 
     # Check if the record we have is already in Koha
-    my $id_001 = $record->field('001')->data();
     say "------------------------------" if $verbose;
+    my $id_001 = $record->field('001')->data();
     say "ID from 001: $id_001" if $verbose;
 
     my $sth = $dbh->prepare("SELECT biblionumber FROM biblio_metadata WHERE metadata LIKE '%$id_001%'");
