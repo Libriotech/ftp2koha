@@ -49,10 +49,6 @@ cleanup: 1
 
 ### Local Koha instance
 
-# Path to the bulkmarcimport.pl script. On a Debian package installation
-# this will be "/usr/share/koha/bin/migration_tools/bulkmarcimport.pl"
-bulkmarcimport_path: "/usr/share/koha/bin/migration_tools/bulkmarcimport.pl"
-
 # Site name of the Koha site you want to import the records into
 # This is the name you gave to the site when you created it with koha-create, 
 # and the name that shows up when you do "koha-list".
