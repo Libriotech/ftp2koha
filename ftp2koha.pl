@@ -77,7 +77,7 @@ if ( $local_file ) {
 
     # Check that the file now exists locally, and has a non-zero size
     if ( ! -s $local_path ) {
-        die "$local_path does not exist!";
+        die "$local_path does not exist or is empty!";
     } else {
         say "Local file $local_path exists" if $verbose;
     }
