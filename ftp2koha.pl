@@ -92,7 +92,7 @@ say "Starting to massage MARC records" if $verbose;
 my $records_count = 0;
 my $records;
 
-if ( $local_path =~ m/xml$/i ) {
+if ( $config->{'marc_format'} && $config->{'marc_format'} eq 'xml' ) {
     say "Got a MARCXML file" if $verbose;
     $records = MARC::File::XML->in( $local_path );
 } else {
