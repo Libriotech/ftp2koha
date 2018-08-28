@@ -109,6 +109,8 @@ while ( my $record = $records->next() ) {
     my $id_001 = $record->field('001')->data();
     say "ID from 001: $id_001" if $verbose;
 
+    $record->encoding( 'UTF-8' );
+
     my $sth = $dbh->prepare("SELECT biblionumber FROM biblio_metadata WHERE metadata LIKE '%$id_001%'");
     $sth->execute();
     my $hits = $sth->fetchall_arrayref;
