@@ -71,3 +71,7 @@ special_items:
 952b: 'ONORDER' # Holdingbranch
 952y: 'ONORDER' # Item type
 9527: '-1' # -1 is "On order", but avaialable for holds
+
+# Get the callnumber from the record
+callnumber_field: 852
+callnumber_subfield: h

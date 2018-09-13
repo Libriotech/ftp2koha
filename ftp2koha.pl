@@ -150,6 +150,15 @@ while ( my $record = $records->next() ) {
                 'itype'         => $config->{'952y'}, # Item type
                 'notforloan'    => $config->{'9527'}, # Not for loan
             };
+            # Check if we should pick a callnumber from the record
+            if ( $config->{'callnumber_field'} && $config->{'callnumber_subfield'} ) {
+                my $field    = $config->{'callnumber_field'};
+                my $subfield = $config->{'callnumber_subfield'};
+                if ( $record->field( $field ) && $record->subfield( $field, $subfield ) && $record->subfield( $field, $subfield ) ne '' ) {
+                    $item->{'itemcallnumber'} = $record->subfield( $field, $subfield );
+                }
+            }
+            say Dumper $item if $debug;
             $itemdetails = "$config->{'952a'} $config->{'952b'} $config->{'952y'}";
         }
 
