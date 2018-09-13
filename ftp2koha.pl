@@ -156,23 +156,26 @@ while ( my $record = $records->next() ) {
         # Add the item to the record
         # $record->insert_fields_ordered( $field952 );
 
-        # Import the record and the item into Koha
-        my ( $biblionumber, $biblioitemnumber ) = AddBiblio( $record, $config->{'frameworkcode'} );
-        if ( $biblionumber ) {
-            say "New record saved with biblionumber = $biblionumber" if $verbose;
-        } else {
-            say "Ooops, something went wrong while saving the record!" if $verbose;
-        }
+        unless ( $test ) {
 
-        # Import the item
-        my $itemnumber;
-        ( $biblionumber, $biblioitemnumber, $itemnumber ) = AddItem($item, $biblionumber);
-        if ( $itemnumber  ) {
-            say "Added item with itemnumber = $itemnumber" if $verbose;
-        } else {
-            say "Ooops, something went wrong while saving the item" if $verbose;
-        }
+            # Import the record and the item into Koha
+            my ( $biblionumber, $biblioitemnumber ) = AddBiblio( $record, $config->{'frameworkcode'} );
+            if ( $biblionumber ) {
+                say "New record saved with biblionumber = $biblionumber" if $verbose;
+            } else {
+                say "Ooops, something went wrong while saving the record!" if $verbose;
+            }
 
+            # Import the item
+            my $itemnumber;
+            ( $biblionumber, $biblioitemnumber, $itemnumber ) = AddItem($item, $biblionumber);
+            if ( $itemnumber  ) {
+                say "Added item with itemnumber = $itemnumber" if $verbose;
+            } else {
+                say "Ooops, something went wrong while saving the item" if $verbose;
+            }
+
+        }
 
     } else {
         say "We have an existing record, going to UPDATE it." if $verbose;
@@ -181,12 +184,18 @@ while ( my $record = $records->next() ) {
         }
         # We use the first one, even if there were more than 1
         my $biblionumber = $hits->[0]->[0];
-        my $res = ModBiblio( $record, $biblionumber, $config->{'frameworkcode'} );
-        if ( $res == 1 ) {
-            say "Record with biblionumber = $biblionumber was UPDATED" if $verbose;
-        } else {
-            say "Record with biblionumber = $biblionumber was NOT updated";
+
+        unless ( $test ) {
+
+            my $res = ModBiblio( $record, $biblionumber, $config->{'frameworkcode'} );
+            if ( $res == 1 ) {
+                say "Record with biblionumber = $biblionumber was UPDATED" if $verbose;
+            } else {
+                say "Record with biblionumber = $biblionumber was NOT updated";
+            }
+
         }
+
         $itemdetails = 'No items changed';
     }
 
