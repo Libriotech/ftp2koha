@@ -12,19 +12,18 @@ ftp2koha.pl - Download MARC records from an FTP site and load them into Koha.
 
 =cut
 
-# use Net::FTP;
+use C4::Context;
+use C4::Biblio;
+use C4::Items;
+
 use MARC::File::USMARC;
-use MARC::File::XML ( BinaryEncoding => 'utf8', RecordFormat => 'UNIMARC' );
+use MARC::File::XML ( BinaryEncoding => 'utf8', RecordFormat => 'MARC21' );
 use YAML::Syck;
 use Getopt::Long;
 use Data::Dumper;
 use DateTime;
 use Pod::Usage;
 use Modern::Perl;
-
-use C4::Context;
-use C4::Biblio;
-use C4::Items;
 
 binmode STDOUT, ":utf8";
 $|=1; # Flush output
