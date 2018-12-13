@@ -124,45 +124,46 @@ while ( my $record = $records->next() ) {
         # We should add items according to the config file
         my $item;
 
-        # Check if there are items that should be treated in a special way
-        if ( $config->{'special_items'} ) { 
-            foreach my $special ( @{ $config->{'special_items'} } ) { 
-                if ( $record->field( $special->{'field'} ) && $record->subfield( $special->{'field'}, $special->{'subfield'} ) && $record->subfield( $special->{'field'}, $special->{'subfield'} ) =~ m/$special->{'text'}/gi ) {
-                    $item = {
-                        'homebranch'    => $special->{'952a'}, # Homebranch
-                        'holdingbranch' => $special->{'952b'}, # Holdingbranch
-                        'itype'         => $special->{'952y'}, # Item type
-                        'notforloan'    => $special->{'9527'}, # Not for loan
-                        };
-                    $itemdetails = "$special->{'952a'} $special->{'952b'} $special->{'952y'}";
-                    last; # Make sure we only add an item for the first match
+        if ( $config->{'skip_items'} == 0 ) {
+
+            # Check if there are items that should be treated in a special way
+            if ( $config->{'special_items'} ) {
+                foreach my $special ( @{ $config->{'special_items'} } ) {
+                    if ( $record->field( $special->{'field'} ) && $record->subfield( $special->{'field'}, $special->{'subfield'} ) && $record->subfield( $special->{'field'}, $special->{'subfield'} ) =~ m/$special->{'text'}/gi ) {
+                        $item = {
+                            'homebranch'    => $special->{'952a'}, # Homebranch
+                            'holdingbranch' => $special->{'952b'}, # Holdingbranch
+                            'itype'         => $special->{'952y'}, # Item type
+                            'notforloan'    => $special->{'9527'}, # Not for loan
+                            };
+                        $itemdetails = "$special->{'952a'} $special->{'952b'} $special->{'952y'}";
+                        last; # Make sure we only add an item for the first match
+                    }
                 }
             }
-        }
 
-        # If $itemdetails is still empty, none of the special cases took effect so we add a standard item
-        if ( $itemdetails eq '' ) {
-            # The rest of the items get the default values
-            $item = {
-                'homebranch'    => $config->{'952a'}, # Homebranch
-                'holdingbranch' => $config->{'952b'}, # Holdingbranch
-                'itype'         => $config->{'952y'}, # Item type
-                'notforloan'    => $config->{'9527'}, # Not for loan
-            };
-            # Check if we should pick a callnumber from the record
-            if ( $config->{'callnumber_field'} && $config->{'callnumber_subfield'} ) {
-                my $field    = $config->{'callnumber_field'};
-                my $subfield = $config->{'callnumber_subfield'};
-                if ( $record->field( $field ) && $record->subfield( $field, $subfield ) && $record->subfield( $field, $subfield ) ne '' ) {
-                    $item->{'itemcallnumber'} = $record->subfield( $field, $subfield );
+            # If $itemdetails is still empty, none of the special cases took effect so we add a standard item
+            if ( $itemdetails eq '' ) {
+                # The rest of the items get the default values
+                $item = {
+                    'homebranch'    => $config->{'952a'}, # Homebranch
+                    'holdingbranch' => $config->{'952b'}, # Holdingbranch
+                    'itype'         => $config->{'952y'}, # Item type
+                    'notforloan'    => $config->{'9527'}, # Not for loan
+                };
+                # Check if we should pick a callnumber from the record
+                if ( $config->{'callnumber_field'} && $config->{'callnumber_subfield'} ) {
+                    my $field    = $config->{'callnumber_field'};
+                    my $subfield = $config->{'callnumber_subfield'};
+                    if ( $record->field( $field ) && $record->subfield( $field, $subfield ) && $record->subfield( $field, $subfield ) ne '' ) {
+                        $item->{'itemcallnumber'} = $record->subfield( $field, $subfield );
+                    }
                 }
+                say Dumper $item if $debug;
+                $itemdetails = "$config->{'952a'} $config->{'952b'} $config->{'952y'}";
             }
-            say Dumper $item if $debug;
-            $itemdetails = "$config->{'952a'} $config->{'952b'} $config->{'952y'}";
-        }
 
-        # Add the item to the record
-        # $record->insert_fields_ordered( $field952 );
+        }
 
         unless ( $test ) {
 
@@ -174,13 +175,17 @@ while ( my $record = $records->next() ) {
                 say "Ooops, something went wrong while saving the record!" if $verbose;
             }
 
-            # Import the item
-            my $itemnumber;
-            ( $biblionumber, $biblioitemnumber, $itemnumber ) = AddItem($item, $biblionumber);
-            if ( $itemnumber  ) {
-                say "Added item with itemnumber = $itemnumber" if $verbose;
+            # Import the item, if we have defined it
+            if ( $item ) {
+                my $itemnumber;
+                ( $biblionumber, $biblioitemnumber, $itemnumber ) = AddItem($item, $biblionumber);
+                if ( $itemnumber  ) {
+                    say "Added item with itemnumber = $itemnumber" if $verbose;
+                } else {
+                    say "Ooops, something went wrong while saving the item" if $verbose;
+                }
             } else {
-                say "Ooops, something went wrong while saving the item" if $verbose;
+                say "No item to add" if $verbose;
             }
 
         }
