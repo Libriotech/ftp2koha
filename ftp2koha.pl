@@ -110,7 +110,7 @@ while ( my $record = $records->next() ) {
 
     $record->encoding( 'UTF-8' );
 
-    my $sth = $dbh->prepare("SELECT biblionumber FROM biblio_metadata WHERE metadata LIKE '%$id_001%'");
+    my $sth = $dbh->prepare("SELECT biblionumber FROM biblio_metadata WHERE ExtractValue( metadata, '//controlfield[\@tag=\"001\"]' ) = '$id_001'");
     $sth->execute();
     my $hits = $sth->fetchall_arrayref;
     print Dumper $hits if $debug;
