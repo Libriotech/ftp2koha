@@ -110,14 +110,14 @@ while ( my $record = $records->next() ) {
 
     $record->encoding( 'UTF-8' );
 
-    my $sth = $dbh->prepare("SELECT biblionumber FROM biblio_metadata WHERE ExtractValue( metadata, '//controlfield[\@tag=\"001\"]' ) = '$id_001'");
+    my $sth = $dbh->prepare("SELECT biblionumber, metadata FROM biblio_metadata WHERE ExtractValue( metadata, '//controlfield[\@tag=\"001\"]' ) = '$id_001'");
     $sth->execute();
     my $hits = $sth->fetchall_arrayref;
     print Dumper $hits if $debug;
 
     my $itemdetails = '';
 
-    # Procees according to the number of hits found
+    # Proceed according to the number of hits found
     if ( scalar @{ $hits } == 0 ) {
         say "We have a new record, going to INSERT it." if $verbose;
 
@@ -165,6 +165,9 @@ while ( my $record = $records->next() ) {
 
         }
 
+        say "NEW RECORD";
+        say $record->as_xml if $debug;
+
         unless ( $test ) {
 
             # Import the record and the item into Koha
@@ -197,7 +200,12 @@ while ( my $record = $records->next() ) {
         }
         # We use the first one, even if there were more than 1
         my $biblionumber = $hits->[0]->[0];
+        my $old_record   = $hits->[0]->[1]; # biblio_metadata.metadata
 
+        say "OLD RECORD"    if $debug;
+        say $old_record     if $debug;
+        say "NEW RECORD"    if $debug;
+        say $record->as_xml if $debug;
         unless ( $test ) {
 
             my $res = ModBiblio( $record, $biblionumber, $config->{'frameworkcode'} );
