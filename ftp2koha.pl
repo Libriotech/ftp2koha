@@ -257,7 +257,8 @@ date, or if the remote file always has the same name, regardless of the date.
 
 =item B<-l, --localfile>
 
-Use a local file for testing and development.
+Use a local file for testing and development, or if you are fetching records by
+some other means than FTP.
 
 =item B<-t, --test>
 
@@ -277,7 +278,7 @@ Even more verbose output.
 Prints this help message and exits.
 
 =back
-                                                               
+
 =cut
 
 sub get_options {
