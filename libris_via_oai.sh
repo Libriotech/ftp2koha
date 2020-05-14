@@ -13,6 +13,13 @@
 
 set -e
 
+# Check we got right number of arguments
+if [ "$#" != 1 ]; then
+    echo "Usage: $0 <koha-instance>"
+    exit;
+fi
+INSTANCE=$1
+
 # Se till att vi inte kör flera instanser av skriptet samtidigt
 [ "${FLOCKER}" != "$0" ] && exec env FLOCKER="$0" flock -en "$0" "$0" "$@" || :
 
@@ -27,6 +34,8 @@ fi
 STARTTIME=`cat $LASTRUNTIMEPATH`
 STOPTIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 OUTFILE="export-$STOPTIME.marcxml"
+LOGFILE="ftp2koha-$INSTANCE-$STOPTIME.log"
+CONFIG="/etc/koha/sites/$INSTANCE/ftp2koha-config-$INSTANCE.yaml"
 
 # Hämta data
 curl --silent --fail -XPOST "https://libris.kb.se/api/marc_export/?from=$STARTTIME&until=$STOPTIME&deleted=ignore&virtualDelete=false" --data-binary @./export.properties > $OUTFILE
@@ -43,4 +52,5 @@ if [ $ACTUALSIZE -le $MAXSIZE ]; then
 else
     # Process it 
     echo "Wrote $OUTFILE, $ACTUALSIZE bytes"
+    /usr/sbin/koha-shell -c "/usr/bin/perl /opt/ftp2koha/ftp2koha.pl --config $CONFIG -v -d" $INSTANCE &> $LOGFILE
 fi
