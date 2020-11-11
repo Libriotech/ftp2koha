@@ -180,8 +180,12 @@ while ( my $record = $records->next() ) {
 
             # Import the item, if we have defined it
             if ( $item ) {
-                my $itemnumber;
-                ( $biblionumber, $biblioitemnumber, $itemnumber ) = AddItem($item, $biblionumber);
+                # Set the biblionumber
+                $item->{ 'biblionumber' } = $biblionumber;
+                # Add the new item
+                my $new_item = Koha::Item->new( $item )->store;
+                # Get the itemnumber
+                my $itemnumber = $new_item->itemnumber;
                 if ( $itemnumber  ) {
                     say "Added item with itemnumber = $itemnumber" if $verbose;
                 } else {
