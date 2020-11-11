@@ -148,8 +148,10 @@ while ( my $record = $records->next() ) {
                         $item = {
                             'homebranch'    => $special->{'952a'}, # Homebranch
                             'holdingbranch' => $special->{'952b'}, # Holdingbranch
+                            'location'      => $special->{'952c'}, # Shelving location code
                             'itype'         => $special->{'952y'}, # Item type
                             'notforloan'    => $special->{'9527'}, # Not for loan
+                            'ccode'         => $special->{'9528'}, # Collection code
                             };
                         $itemdetails = "$special->{'952a'} $special->{'952b'} $special->{'952y'}";
                         last; # Make sure we only add an item for the first match
@@ -163,8 +165,10 @@ while ( my $record = $records->next() ) {
                 $item = {
                     'homebranch'    => $config->{'952a'}, # Homebranch
                     'holdingbranch' => $config->{'952b'}, # Holdingbranch
+                    'location'      => $config->{'952c'}, # Shelving location code
                     'itype'         => $config->{'952y'}, # Item type
                     'notforloan'    => $config->{'9527'}, # Not for loan
+                    'ccode'         => $config->{'9528'}, # Collection code
                 };
                 # Check if we should pick a callnumber from the record
                 if ( $config->{'callnumber_field'} && $config->{'callnumber_subfield'} ) {
