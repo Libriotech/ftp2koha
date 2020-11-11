@@ -62,15 +62,28 @@ special_items:
    text: "Electronic resource"
    952a: 'Y'
    952b: 'Y'
+   952c: 'X' # Shelving location code. LOC
    952y: 'EBOOK'
    9527: '0' # Zero is "available"
+   9528: 'Z'  # Collection code. CCODE
+ - field: 008
+   position: 22
+   text: j
+   952a: 'Y'
+   952b: 'Y'
+   952c: 'CHILD' # Shelving location code. LOC
+   952y: 'BOOK'
+   9527: '0' # Zero is "available"
+   9528: 'CHILD'  # Collection code. CCODE
 
 ### Default item values
 
 952a: 'ONORDER' # Homebranch
 952b: 'ONORDER' # Holdingbranch
+952c: 'X' # Shelving location code. LOC
 952y: 'ONORDER' # Item type
 9527: '-1' # -1 is "On order", but avaialable for holds
+9528: 'Z'  # Collection code. CCODE
 
 # Get the callnumber from the record
 callnumber_field: 852
