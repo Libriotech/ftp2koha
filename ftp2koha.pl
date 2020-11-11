@@ -129,7 +129,22 @@ while ( my $record = $records->next() ) {
             # Check if there are items that should be treated in a special way
             if ( $config->{'special_items'} ) {
                 foreach my $special ( @{ $config->{'special_items'} } ) {
-                    if ( $record->field( $special->{'field'} ) && $record->subfield( $special->{'field'}, $special->{'subfield'} ) && $record->subfield( $special->{'field'}, $special->{'subfield'} ) =~ m/$special->{'text'}/gi ) {
+                    # Special treatment for controlfields
+                    my $position_data;
+                    if ( is_controlfield_tag( $special->{'field'} ) ) {
+                        my $cfield = field( $special->{'field'} )->data;
+                        my $substr_pos = $special->{'field'} - 1;
+                        $position_data = substr $cfield, $substr_pos, 1;
+                    }
+                    if ((
+                        $record->field( $special->{'field'} ) &&
+                        $record->subfield( $special->{'field'}, $special->{'subfield'} ) &&
+                        $record->subfield( $special->{'field'}, $special->{'subfield'} ) =~ m/$special->{'text'}/gi
+                    ) || (
+                        $record->field( $special->{'field'} ) &&
+                        is_controlfield_tag( $special->{'field'} ) &&
+                        $position_data eq $special->{'text'}
+                    )) {
                         $item = {
                             'homebranch'    => $special->{'952a'}, # Homebranch
                             'holdingbranch' => $special->{'952b'}, # Holdingbranch
