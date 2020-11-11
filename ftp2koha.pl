@@ -214,6 +214,11 @@ while ( my $record = $records->next() ) {
                 say "No item to add" if $verbose;
             }
 
+        } else {
+
+            say "Item data, not imported (because of --test):";
+            say Dumper $item;
+
         }
 
     } else {
