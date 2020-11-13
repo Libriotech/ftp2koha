@@ -18,6 +18,7 @@ use Koha::Item;
 
 use MARC::File::USMARC;
 use MARC::File::XML ( BinaryEncoding => 'utf8', RecordFormat => 'MARC21' );
+use MARC::Field;
 use YAML::Syck;
 use Getopt::Long;
 use Data::Dumper;
