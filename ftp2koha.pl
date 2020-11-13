@@ -352,6 +352,18 @@ sub get_options {
 
 }
 
+=head1 TIPS AND TRICKS
+
+=head2 Find new records and items in the logs
+
+  $ sudo grep -n -e "New record saved" -e "Added item" *
+
+=head2 Find items added by this script in the database
+
+If you run it with --comment, at least.
+
+  SELECT itemnumber, barcode, itype, location, ccode FROM items WHERE itemnotes_nonpublic = 'ftp2koha';
+
 =head1 AUTHOR
 
 Magnus Enger, magnus [at] libriotech.no
