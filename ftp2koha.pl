@@ -132,18 +132,19 @@ while ( my $record = $records->next() ) {
                 foreach my $special ( @{ $config->{'special_items'} } ) {
                     # Special treatment for controlfields
                     my $position_data;
-                    if ( is_controlfield_tag( $special->{'field'} ) ) {
+                    if ( MARC::Field->is_controlfield_tag( $special->{'field'} ) ) {
                         my $cfield = field( $special->{'field'} )->data;
-                        my $substr_pos = $special->{'field'} - 1;
+                        my $substr_pos = $special->{'field'};
                         $position_data = substr $cfield, $substr_pos, 1;
                     }
                     if ((
+                        ! MARC::Field->is_controlfield_tag( $special->{'field'} ) &&
                         $record->field( $special->{'field'} ) &&
                         $record->subfield( $special->{'field'}, $special->{'subfield'} ) &&
                         $record->subfield( $special->{'field'}, $special->{'subfield'} ) =~ m/$special->{'text'}/gi
                     ) || (
                         $record->field( $special->{'field'} ) &&
-                        is_controlfield_tag( $special->{'field'} ) &&
+                        MARC::Field->is_controlfield_tag( $special->{'field'} ) &&
                         $position_data eq $special->{'text'}
                     )) {
                         $item = {
