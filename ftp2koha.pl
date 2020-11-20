@@ -133,7 +133,7 @@ while ( my $record = $records->next() ) {
                     # Special treatment for controlfields
                     my $position_data;
                     if ( MARC::Field->is_controlfield_tag( $special->{'field'} ) ) {
-                        my $cfield = field( $special->{'field'} )->data;
+                        my $cfield = $record->field( $special->{'field'} )->data;
                         my $substr_pos = $special->{'field'};
                         $position_data = substr $cfield, $substr_pos, 1;
                     }
