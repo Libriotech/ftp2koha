@@ -102,7 +102,7 @@ if ( $config->{'marc_format'} && $config->{'marc_format'} eq 'xml' ) {
 
 my $dbh = C4::Context->dbh;
 
-while ( my $record = $records->next() ) {
+RECORD: while ( my $record = $records->next() ) {
 
     # Check if the record we have is already in Koha
     say "------------------------------" if $verbose;
@@ -129,35 +129,26 @@ while ( my $record = $records->next() ) {
 
             # Check if there are items that should be treated in a special way
             if ( $config->{'special_items'} ) {
-                foreach my $special ( @{ $config->{'special_items'} } ) {
+                SPECIAL: foreach my $special ( @{ $config->{'special_items'} } ) {
                     # Special treatment for controlfields
-                    my $position_data;
-                    if ( MARC::Field->is_controlfield_tag( $special->{'field'} ) ) {
+                    if ( $record->field( $special->{'field'} ) && MARC::Field->is_controlfield_tag( $special->{'field'} ) ) {
                         my $cfield = $record->field( $special->{'field'} )->data;
+                        say $cfield if $debug;
                         my $substr_pos = $special->{'field'};
-                        $position_data = substr $cfield, $substr_pos, 1;
+                        my $position_data = substr $cfield, $substr_pos, 1;
+                        if ( $position_data eq $special->{'text'} ) {
+                            ( $item, $itemdetails ) = _make_item( $special );
+                            last SPECIAL; # Make sure we only add an item for the first match
+                        }
                     }
-                    if ((
+                    if (
                         ! MARC::Field->is_controlfield_tag( $special->{'field'} ) &&
                         $record->field( $special->{'field'} ) &&
                         $record->subfield( $special->{'field'}, $special->{'subfield'} ) &&
                         $record->subfield( $special->{'field'}, $special->{'subfield'} ) =~ m/$special->{'text'}/gi
-                    ) || (
-                        $record->field( $special->{'field'} ) &&
-                        MARC::Field->is_controlfield_tag( $special->{'field'} ) &&
-                        $position_data eq $special->{'text'}
-                    )) {
-                        $item = {
-                            'homebranch'     => $special->{'952a'}, # Homebranch
-                            'holdingbranch'  => $special->{'952b'}, # Holdingbranch
-                            'location'       => $special->{'952c'}, # Shelving location code
-                            'itype'          => $special->{'952y'}, # Item type
-                            'notforloan'     => $special->{'9527'}, # Not for loan
-                            'ccode'          => $special->{'9528'}, # Collection code
-                            'itemcallnumber' => $special->{'952o'}, # Koha full call number
-                            };
-                        $itemdetails = "$special->{'952a'} $special->{'952b'} $special->{'952y'}";
-                        last; # Make sure we only add an item for the first match
+                    ) {
+                        ( $item, $itemdetails ) = _make_item( $special );
+                        last SPECIAL; # Make sure we only add an item for the first match
                     }
                 }
             } # End special_items
@@ -165,15 +156,7 @@ while ( my $record = $records->next() ) {
             # If $itemdetails is still empty, none of the special cases took effect so we add a standard item
             if ( $itemdetails eq '' ) {
                 # The rest of the items get the default values
-                $item = {
-                    'homebranch'     => $config->{'952a'}, # Homebranch
-                    'holdingbranch'  => $config->{'952b'}, # Holdingbranch
-                    'location'       => $config->{'952c'}, # Shelving location code
-                    'itype'          => $config->{'952y'}, # Item type
-                    'notforloan'     => $config->{'9527'}, # Not for loan
-                    'ccode'          => $config->{'9528'}, # Collection code
-                    'itemcallnumber' => $config->{'952o'}, # Koha full call number
-                };
+                ( $item, $itemdetails ) = _make_item( $config );
             }
 
             # Check if we should pick a callnumber from the record
@@ -261,7 +244,7 @@ while ( my $record = $records->next() ) {
     $records_count++;
     say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
 
-    last if $limit && $limit == $records_count;
+    last RECORD if $limit && $limit == $records_count;
 
 }
 say "------------------------------" if $verbose;
@@ -277,6 +260,46 @@ if ( $config->{'cleanup'} ) {
 }
 
 say "*** This was a test run, no records were imported ***" if $test;
+
+=head1 INTERNAL FUNCTIONS
+
+=head2 _make_item
+
+Takes a configuration for an item:
+
+  - field: 008
+    position: 22
+    text: j
+    952a: 'SBI'   # Homebranch
+    952b: 'SBI'   # Holdingbranch
+    952c: 'BARNB' # Shelving location code. LOC
+    952y: 'LASE'  # Item type
+    9527: '0'    # Not for loan. -1 = Ordered
+    9528: 'BARN'  # Collection code. CCODE
+
+And returns a hashref of item data plus a string to show home- and holdinglibrary, 
+and itemtype.
+
+=cut
+
+sub _make_item {
+
+    my ( $config ) = @_;
+
+    $item = {
+        'homebranch'     => $config->{'952a'}, # Homebranch
+        'holdingbranch'  => $config->{'952b'}, # Holdingbranch
+        'location'       => $config->{'952c'}, # Shelving location code
+        'itype'          => $config->{'952y'}, # Item type
+        'notforloan'     => $config->{'9527'}, # Not for loan
+        'ccode'          => $config->{'9528'}, # Collection code
+        'itemcallnumber' => $config->{'952o'}, # Koha full call number
+    };
+    $itemdetails = "$config->{'952a'} $config->{'952b'} $config->{'952y'}";
+
+    return ( $item, $itemdetails );
+
+}
 
 =head1 OPTIONS
 
