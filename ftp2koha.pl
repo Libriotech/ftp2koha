@@ -148,43 +148,47 @@ while ( my $record = $records->next() ) {
                         $position_data eq $special->{'text'}
                     )) {
                         $item = {
-                            'homebranch'    => $special->{'952a'}, # Homebranch
-                            'holdingbranch' => $special->{'952b'}, # Holdingbranch
-                            'location'      => $special->{'952c'}, # Shelving location code
-                            'itype'         => $special->{'952y'}, # Item type
-                            'notforloan'    => $special->{'9527'}, # Not for loan
-                            'ccode'         => $special->{'9528'}, # Collection code
+                            'homebranch'     => $special->{'952a'}, # Homebranch
+                            'holdingbranch'  => $special->{'952b'}, # Holdingbranch
+                            'location'       => $special->{'952c'}, # Shelving location code
+                            'itype'          => $special->{'952y'}, # Item type
+                            'notforloan'     => $special->{'9527'}, # Not for loan
+                            'ccode'          => $special->{'9528'}, # Collection code
+                            'itemcallnumber' => $special->{'952o'}, # Koha full call number
                             };
                         $itemdetails = "$special->{'952a'} $special->{'952b'} $special->{'952y'}";
                         last; # Make sure we only add an item for the first match
                     }
                 }
-            }
+            } # End special_items
 
             # If $itemdetails is still empty, none of the special cases took effect so we add a standard item
             if ( $itemdetails eq '' ) {
                 # The rest of the items get the default values
                 $item = {
-                    'homebranch'    => $config->{'952a'}, # Homebranch
-                    'holdingbranch' => $config->{'952b'}, # Holdingbranch
-                    'location'      => $config->{'952c'}, # Shelving location code
-                    'itype'         => $config->{'952y'}, # Item type
-                    'notforloan'    => $config->{'9527'}, # Not for loan
-                    'ccode'         => $config->{'9528'}, # Collection code
+                    'homebranch'     => $config->{'952a'}, # Homebranch
+                    'holdingbranch'  => $config->{'952b'}, # Holdingbranch
+                    'location'       => $config->{'952c'}, # Shelving location code
+                    'itype'          => $config->{'952y'}, # Item type
+                    'notforloan'     => $config->{'9527'}, # Not for loan
+                    'ccode'          => $config->{'9528'}, # Collection code
+                    'itemcallnumber' => $config->{'952o'}, # Koha full call number
                 };
-                # Check if we should pick a callnumber from the record
-                if ( $config->{'callnumber_field'} && $config->{'callnumber_subfield'} ) {
-                    my $field    = $config->{'callnumber_field'};
-                    my $subfield = $config->{'callnumber_subfield'};
-                    if ( $record->field( $field ) && $record->subfield( $field, $subfield ) && $record->subfield( $field, $subfield ) ne '' ) {
-                        $item->{'itemcallnumber'} = $record->subfield( $field, $subfield );
-                    }
-                }
-                say Dumper $item if $debug;
-                $itemdetails = "$config->{'952a'} $config->{'952b'} $config->{'952y'}";
             }
 
-        }
+            # Check if we should pick a callnumber from the record
+            # Only do this if there isn't one already
+            if ( !defined $item->{ 'itemcallnumber' } && $config->{'callnumber_field'} && $config->{'callnumber_subfield'} ) {
+                my $field    = $config->{'callnumber_field'};
+                my $subfield = $config->{'callnumber_subfield'};
+                if ( $record->field( $field ) && $record->subfield( $field, $subfield ) && $record->subfield( $field, $subfield ) ne '' ) {
+                    $item->{'itemcallnumber'} = $record->subfield( $field, $subfield );
+                }
+            }
+            say Dumper $item if $debug;
+            $itemdetails = "$config->{'952a'} $config->{'952b'} $config->{'952y'}";
+
+        } # End config skip_items
 
         say "NEW RECORD";
         say $record->as_xml if $debug;
