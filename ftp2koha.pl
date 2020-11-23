@@ -287,7 +287,7 @@ sub _make_item {
 
     my ( $config ) = @_;
 
-    $item = {
+    my $item = {
         'homebranch'     => $config->{'952a'}, # Homebranch
         'holdingbranch'  => $config->{'952b'}, # Holdingbranch
         'location'       => $config->{'952c'}, # Shelving location code
@@ -296,7 +296,7 @@ sub _make_item {
         'ccode'          => $config->{'9528'}, # Collection code
         'itemcallnumber' => $config->{'952o'}, # Koha full call number
     };
-    $itemdetails = "$config->{'952a'} $config->{'952b'} $config->{'952y'}";
+    my $itemdetails = "$config->{'952a'} $config->{'952b'} $config->{'952y'}";
 
     return ( $item, $itemdetails );
 
