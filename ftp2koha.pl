@@ -136,6 +136,7 @@ RECORD: while ( my $record = $records->next() ) {
                         say $cfield if $debug;
                         my $substr_pos = $special->{'field'};
                         my $position_data = substr $cfield, $substr_pos, 1;
+                        say $position_data if $debug;
                         if ( $position_data eq $special->{'text'} ) {
                             ( $item, $itemdetails ) = _make_item( $special );
                             last SPECIAL; # Make sure we only add an item for the first match
