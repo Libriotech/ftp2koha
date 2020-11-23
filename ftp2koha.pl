@@ -33,7 +33,7 @@ my $dt = DateTime->now;
 my $date = $dt->ymd;
 
 # Get options
-my ( $config_file, $filename, $local_file, $test, $comment, $verbose, $debug ) = get_options();
+my ( $config_file, $filename, $local_file, $test, $comment, $limit, $verbose, $debug ) = get_options();
 
 =pod
 
@@ -261,6 +261,8 @@ while ( my $record = $records->next() ) {
     $records_count++;
     say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
 
+    last if $limit && $limit == $records_count;
+
 }
 say "------------------------------" if $verbose;
 say "Done ($records_count records)" if $verbose;
@@ -308,6 +310,10 @@ mode.
 Put a comment with the text "ftp2koha" in 952$x, to make it easy to pick out
 items added by this script.
 
+=item B<--limit>
+
+Limit to x records.
+
 =item B<-v --verbose>
 
 More verbose output.
@@ -332,6 +338,7 @@ sub get_options {
     my $local_file  = '';
     my $test        = '';
     my $comment     = '';
+    my $limit       = '';
     my $verbose     = '';
     my $debug       = '';
     my $help        = '';
@@ -342,6 +349,7 @@ sub get_options {
         'l|localfile=s' => \$local_file,
         't|test'        => \$test,
         'comment'       => \$comment,
+        'limit=i'       => \$limit,
         'v|verbose'     => \$verbose,
         'd|debug'       => \$debug,
         'h|?|help'      => \$help
@@ -353,7 +361,7 @@ sub get_options {
     # Test mode should always be verbose
     $verbose = 1 if $test;
 
-    return ( $config_file, $filename, $local_file, $test, $comment, $verbose, $debug );
+    return ( $config_file, $filename, $local_file, $test, $comment, $limit, $verbose, $debug );
 
 }
 
