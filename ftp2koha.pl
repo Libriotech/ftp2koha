@@ -22,6 +22,7 @@ use MARC::Field;
 use YAML::Syck;
 use Getopt::Long;
 use Data::Dumper;
+$Data::Dumper::Sortkeys = 1;
 use DateTime;
 use Pod::Usage;
 use Modern::Perl;
