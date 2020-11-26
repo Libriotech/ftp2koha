@@ -134,7 +134,7 @@ RECORD: while ( my $record = $records->next() ) {
                     if ( $record->field( $special->{'field'} ) && MARC::Field->is_controlfield_tag( $special->{'field'} ) ) {
                         my $cfield = $record->field( $special->{'field'} )->data;
                         say $cfield if $debug;
-                        my $substr_pos = $special->{'field'};
+                        my $substr_pos = $special->{'position'};
                         my $position_data = substr $cfield, $substr_pos, 1;
                         say $position_data if $debug;
                         if ( $position_data eq $special->{'text'} ) {
