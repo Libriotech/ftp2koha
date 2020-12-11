@@ -13,8 +13,10 @@ ftp2koha.pl - Download MARC records from an FTP site and load them into Koha.
 =cut
 
 use C4::Context;
-use C4::Biblio;
+use C4::Barcodes::ValueBuilder;
+use C4::Biblio qw/GetMarcFromKohaField/;
 use Koha::Item;
+use Koha::DateUtils;
 
 use MARC::File::USMARC;
 use MARC::File::XML ( BinaryEncoding => 'utf8', RecordFormat => 'MARC21' );
@@ -278,6 +280,7 @@ Takes a configuration for an item:
     952y: 'LASE'  # Item type
     9527: '0'    # Not for loan. -1 = Ordered
     9528: 'BARN'  # Collection code. CCODE
+    barcode: auto
 
 And returns a hashref of item data plus a string to show home- and holdinglibrary, 
 and itemtype.
@@ -297,9 +300,46 @@ sub _make_item {
         'ccode'          => $config->{'9528'}, # Collection code
         'itemcallnumber' => $config->{'952o'}, # Koha full call number
     };
+    if ( defined $config->{'barcode'} && $config->{'barcode'} eq 'auto' ) {
+        my $newbarcode = _get_next_barcode;
+        say "Going to add barcode=$newbarcode";
+        $item->{ 'barcode' } = $newbarcode;
+    }
     my $itemdetails = "$config->{'952a'} $config->{'952b'} $config->{'952y'}";
 
     return ( $item, $itemdetails );
+
+}
+
+=head2 _get_next_barcode
+
+Generate the next barcode.
+
+=cut
+
+sub _get_next_barcode {
+
+
+    my %args;
+
+    # find today's date
+    ($args{year}, $args{mon}, $args{day}) = split('-', output_pref({ dt => dt_from_string, dateformat => 'iso', dateonly => 1 }));
+    ($args{tag},$args{subfield})       =  GetMarcFromKohaField( "items.barcode" );
+    ($args{loctag},$args{locsubfield}) =  GetMarcFromKohaField( "items.homebranch" );
+
+    my $nextnum;
+    my $scr;
+    my $autoBarcodeType = C4::Context->preference("autoBarcode");
+    if ((not $autoBarcodeType) or $autoBarcodeType eq 'OFF') {
+        # don't return a value unless we have the appropriate syspref set
+        return '';
+    }
+    if ($autoBarcodeType eq 'annual') {
+        ($nextnum, $scr) = C4::Barcodes::ValueBuilder::annual::get_barcode(\%args);
+        return $nextnum;
+    }
+
+    return undef;
 
 }
 
