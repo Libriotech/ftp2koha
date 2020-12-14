@@ -280,7 +280,7 @@ Takes a configuration for an item:
     952y: 'LASE'  # Item type
     9527: '0'    # Not for loan. -1 = Ordered
     9528: 'BARN'  # Collection code. CCODE
-    barcode: auto
+    barcode: auto   
 
 And returns a hashref of item data plus a string to show home- and holdinglibrary, 
 and itemtype.
@@ -301,7 +301,7 @@ sub _make_item {
         'itemcallnumber' => $config->{'952o'}, # Koha full call number
     };
     if ( defined $config->{'barcode'} && $config->{'barcode'} eq 'auto' ) {
-        my $newbarcode = _get_next_barcode;
+        my $newbarcode = _get_next_barcode();
         say "Going to add barcode=$newbarcode";
         $item->{ 'barcode' } = $newbarcode;
     }
