@@ -110,11 +110,18 @@ RECORD: while ( my $record = $records->next() ) {
     # Check if the record we have is already in Koha
     say "------------------------------" if $verbose;
     my $id_001 = $record->field('001')->data();
-    say "ID from 001: $id_001" if $verbose;
+    my $id_003 = $record->field('003')->data();
+    say "ID from 001+003: $id_001 $id_003" if $verbose;
 
     $record->encoding( 'UTF-8' );
 
-    my $sth = $dbh->prepare("SELECT biblionumber, metadata FROM biblio_metadata WHERE ExtractValue( metadata, '//controlfield[\@tag=\"001\"]' ) = '$id_001'");
+    my $sth = $dbh->prepare("
+        SELECT biblionumber, metadata 
+        FROM biblio_metadata 
+        WHERE 
+          ExtractValue( metadata, '//controlfield[\@tag=\"001\"]' ) = '$id_001' AND
+          ExtractValue( metadata, '//controlfield[\@tag=\"003\"]' ) = '$id_003'
+    ");
     $sth->execute();
     my $hits = $sth->fetchall_arrayref;
     # print Dumper $hits if $debug;
