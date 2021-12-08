@@ -15,12 +15,14 @@ ftp2koha.pl - Download MARC records from an FTP site and load them into Koha.
 use C4::Context;
 use C4::Barcodes::ValueBuilder;
 use C4::Biblio qw( AddBiblio ModBiblio GetMarcFromKohaField );
+use Koha::Biblios;
 use Koha::Item;
 use Koha::DateUtils;
 
 use MARC::File::USMARC;
 use MARC::File::XML ( BinaryEncoding => 'utf8', RecordFormat => 'MARC21' );
 use MARC::Field;
+use Text::Diff;
 use YAML::Syck;
 use Getopt::Long;
 use Data::Dumper;
@@ -232,12 +234,15 @@ RECORD: while ( my $record = $records->next() ) {
         }
         # We use the first one, even if there were more than 1
         my $biblionumber = $hits->[0]->[0];
-        my $old_record   = $hits->[0]->[1]; # biblio_metadata.metadata
+	my $biblio = Koha::Biblios->find($biblionumber);
 
-        say "OLD RECORD"    if $debug;
-        say $old_record     if $debug;
-        say "NEW RECORD"    if $debug;
-        say $record->as_xml if $debug;
+        say "--- OLD RECORD ---" if $debug;
+	say $biblio->metadata->record->as_formatted if $debug;
+        say "--- NEW RECORD ---" if $debug;
+        say $record->as_formatted if $debug;
+	# Diff
+	say "--- DIFF ---";
+	say diff \$biblio->metadata->record->as_formatted, \$record->as_formatted;
         unless ( $test ) {
 
             my $res = ModBiblio( $record, $biblionumber, $config->{'frameworkcode'} );
@@ -247,7 +252,10 @@ RECORD: while ( my $record = $records->next() ) {
                 say "Record with biblionumber = $biblionumber was NOT updated";
             }
 
-        }
+        } else {
+	    say "In test mode, no changes done" if $verbose;
+	}
+	exit;
 
         $itemdetails = 'No items changed';
     }
