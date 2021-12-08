@@ -23,6 +23,7 @@ use MARC::File::USMARC;
 use MARC::File::XML ( BinaryEncoding => 'utf8', RecordFormat => 'MARC21' );
 use MARC::Field;
 use Text::Diff;
+use Text::Diff::Table;
 use YAML::Syck;
 use Getopt::Long;
 use Data::Dumper;
@@ -242,7 +243,7 @@ RECORD: while ( my $record = $records->next() ) {
         say $record->as_formatted if $debug;
 	# Diff
 	say "--- DIFF ---";
-	say diff \$biblio->metadata->record->as_formatted, \$record->as_formatted;
+	say diff \$biblio->metadata->record->as_formatted, \$record->as_formatted, { STYLE => "Text::Diff::Table" };
         unless ( $test ) {
 
             my $res = ModBiblio( $record, $biblionumber, $config->{'frameworkcode'} );
