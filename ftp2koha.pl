@@ -60,6 +60,8 @@ say "Using config from $config_file" if $verbose;
 # Load the config
 my $config = LoadFile( $config_file );
 
+my @done;
+
 my $local_path;
 if ( $local_file ) {
 
@@ -110,11 +112,15 @@ my $dbh = C4::Context->dbh;
 
 RECORD: while ( my $record = $records->next() ) {
 
+    my $summary;
+
     # Check if the record we have is already in Koha
     say "------------------------------" if $verbose;
     my $id_001 = $record->field('001')->data();
     my $id_003 = $record->field('003')->data();
     say "ID from 001+003: $id_001 $id_003" if $verbose;
+    $summary->{ 'id_001' } = $id_001;
+    $summary->{ 'id_003' } = $id_003;
 
     $record->encoding( 'UTF-8' );
 
@@ -134,6 +140,7 @@ RECORD: while ( my $record = $records->next() ) {
     # Proceed according to the number of hits found
     if ( scalar @{ $hits } == 0 ) {
         say "We have a new record, going to INSERT it." if $verbose;
+	$summary->{'action'} = 'INSERT';
 
         # We should add items according to the config file
         my $item;
@@ -195,7 +202,8 @@ RECORD: while ( my $record = $records->next() ) {
             # Import the record and the item into Koha
             my ( $biblionumber, $biblioitemnumber ) = AddBiblio( $record, $config->{'frameworkcode'} );
             if ( $biblionumber ) {
-                say "New record saved with biblionumber = $biblionumber" if $verbose;
+                say "New record saved with biblionumber=$biblionumber" if $verbose;
+                $summary->{'biblionumber'} = $biblionumber;
             } else {
                 say "Ooops, something went wrong while saving the record!" if $verbose;
             }
@@ -225,17 +233,20 @@ RECORD: while ( my $record = $records->next() ) {
 
             say "Item data, not imported (because of --test):";
             say Dumper $item;
-
+            $summary->{'biblionumber'} = 'test';
         }
 
     } else {
         say "We have an existing record, going to UPDATE it." if $verbose;
+        $summary->{'action'} = 'UPDATE';
         if ( scalar @{ $hits } > 1 ) {
             say "PROBLEM: More than 1 hit for 001 = $id_001" if $verbose;
         }
         # We use the first one, even if there were more than 1
         my $biblionumber = $hits->[0]->[0];
 	my $biblio = Koha::Biblios->find($biblionumber);
+	say "biblionumber=$biblionumber" if $verbose;
+	$summary->{'biblionumber'} = $biblionumber;
 
         say "--- KOHA RECORD ---" if $debug;
 	say $biblio->metadata->record->as_formatted if $debug;
@@ -252,6 +263,7 @@ RECORD: while ( my $record = $records->next() ) {
             say "Copying $field_num";
 	    my @fields = $biblio->metadata->record->field( $field_num );
 	    say Dumper \@fields if $debug;
+	    $summary->{'preserved_fields'} += scalar @fields;
 	    $record->insert_fields_ordered( @fields );
 	}
 	say "--- MERGED RECORD ---" if $debug;
@@ -278,6 +290,7 @@ RECORD: while ( my $record = $records->next() ) {
 
     $records_count++;
     say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
+    push @done, $summary;
 
     last RECORD if $limit && $limit == $records_count;
 
@@ -295,6 +308,11 @@ if ( $config->{'cleanup'} ) {
 }
 
 say "*** This was a test run, no records were imported ***" if $test;
+say "Summary:" if $verbose;
+foreach my $rec ( @done ) {
+    $rec->{'preserved_fields'} = 0 unless defined $rec->{'preserved_fields'};
+    say "$rec->{ 'action' } $rec->{ 'biblionumber' } ($rec->{ 'id_001' } $rec->{ 'id_003' }) [$rec->{'preserved_fields'}]";
+}
 
 =head1 INTERNAL FUNCTIONS
 
