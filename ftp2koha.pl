@@ -195,7 +195,7 @@ RECORD: while ( my $record = $records->next() ) {
         } # End config skip_items
 
         say "NEW RECORD";
-        say $record->as_xml if $debug;
+        say $record->as_formatted if $debug;
 
         unless ( $test ) {
 
