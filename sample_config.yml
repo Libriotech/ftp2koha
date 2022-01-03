@@ -47,6 +47,23 @@ local_dir: "/tmp/"
 #     0 = no, keep the file
 cleanup: 1
 
+preserve_fields:
+  - 562
+  - 590
+  - 591
+  - 592
+  - 593
+  - 594
+  - 595
+  - 596
+  - 597
+  - 598
+  - 697
+  - 599
+  - 653
+  - 852
+  - 976
+
 ### Local Koha instance
 
 # Code for the framework the records should be imported with

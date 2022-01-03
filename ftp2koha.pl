@@ -282,8 +282,8 @@ RECORD: while ( my $record = $records->next() ) {
             }
 
         } else {
-	    say "In test mode, no changes done" if $verbose;
-	}
+            say "In test mode, no changes made" if $verbose;
+        }
 
         $itemdetails = 'No items changed';
     }
