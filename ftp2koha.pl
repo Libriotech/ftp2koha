@@ -252,13 +252,22 @@ RECORD: while ( my $record = $records->next() ) {
         say $biblio->metadata->record->as_formatted if $debug;
         say "--- LIBRIS RECORD ---" if $debug;
         say $record->as_formatted if $debug;
+
+        ## Delete fields that should be deleted from the Libris record
+        foreach my $field_num ( @{ $config->{'delete_fields'} } ) {
+            say "Deleting $field_num";
+            my @fields = $record->field( $field_num );
+            say Dumper \@fields if $debug;
+            $record->delete_fields( @fields );
+        }
+
         ## Preserve fields that should be preserved
         # Delete these fields from the Libris record
         foreach my $field_num ( @{ $config->{'preserve_fields'} } ) {
             say "Deleting $field_num";
-            my @fields = $biblio->metadata->record->field( $field_num );
+            my @fields = $record->field( $field_num );
             say Dumper \@fields if $debug;
-            $record->delete_fields( $record->field( $field_num ) );
+            $record->delete_fields( @fields );
         }
         # Now copy the same fields from the Koha record to the Libris record
         foreach my $field_num ( @{ $config->{'preserve_fields'} } ) {
@@ -268,11 +277,13 @@ RECORD: while ( my $record = $records->next() ) {
             $summary->{'preserved_fields'} += scalar @fields;
             $record->insert_fields_ordered( @fields );
         }
+
         say "--- MERGED RECORD ---" if $debug;
         say $record->as_formatted;
         # Diff
         say "--- DIFF ---";
         say diff \$biblio->metadata->record->as_formatted, \$record->as_formatted, { STYLE => "Text::Diff::Table" } if $debug;
+
         # Save the changed record
         unless ( $test ) {
 
