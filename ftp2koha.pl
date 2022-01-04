@@ -140,7 +140,7 @@ RECORD: while ( my $record = $records->next() ) {
     # Proceed according to the number of hits found
     if ( scalar @{ $hits } == 0 ) {
         say "We have a new record, going to INSERT it." if $verbose;
-	$summary->{'action'} = 'INSERT';
+    $summary->{'action'} = 'INSERT';
 
         # We should add items according to the config file
         my $item;
@@ -244,34 +244,34 @@ RECORD: while ( my $record = $records->next() ) {
         }
         # We use the first one, even if there were more than 1
         my $biblionumber = $hits->[0]->[0];
-	my $biblio = Koha::Biblios->find($biblionumber);
-	say "biblionumber=$biblionumber" if $verbose;
-	$summary->{'biblionumber'} = $biblionumber;
+        my $biblio = Koha::Biblios->find($biblionumber);
+        say "biblionumber=$biblionumber" if $verbose;
+        $summary->{'biblionumber'} = $biblionumber;
 
         say "--- KOHA RECORD ---" if $debug;
-	say $biblio->metadata->record->as_formatted if $debug;
+        say $biblio->metadata->record->as_formatted if $debug;
         say "--- LIBRIS RECORD ---" if $debug;
         say $record->as_formatted if $debug;
-	## Preserve fields that should be preserved
-	# Delete these fields from the Libris record
-	foreach my $field_num ( @{ $config->{'preserve_fields'} } ) {
-	    say "Deleting $field_num";
-	    $record->delete_fields( $record->field( $field_num ) );
-	}
-	# Now copy the same fields from the Koha record to the Libris record
-	foreach my $field_num ( @{ $config->{'preserve_fields'} } ) {
+        ## Preserve fields that should be preserved
+        # Delete these fields from the Libris record
+        foreach my $field_num ( @{ $config->{'preserve_fields'} } ) {
+            say "Deleting $field_num";
+            $record->delete_fields( $record->field( $field_num ) );
+        }
+        # Now copy the same fields from the Koha record to the Libris record
+        foreach my $field_num ( @{ $config->{'preserve_fields'} } ) {
             say "Copying $field_num";
-	    my @fields = $biblio->metadata->record->field( $field_num );
-	    say Dumper \@fields if $debug;
-	    $summary->{'preserved_fields'} += scalar @fields;
-	    $record->insert_fields_ordered( @fields );
-	}
-	say "--- MERGED RECORD ---" if $debug;
-	say $record->as_formatted;
+            my @fields = $biblio->metadata->record->field( $field_num );
+            say Dumper \@fields if $debug;
+            $summary->{'preserved_fields'} += scalar @fields;
+            $record->insert_fields_ordered( @fields );
+        }
+        say "--- MERGED RECORD ---" if $debug;
+        say $record->as_formatted;
         # Diff
         say "--- DIFF ---";
         say diff \$biblio->metadata->record->as_formatted, \$record->as_formatted, { STYLE => "Text::Diff::Table" } if $debug;
-	# Save the changed record
+        # Save the changed record
         unless ( $test ) {
 
             my $res = ModBiblio( $record, $biblionumber, $config->{'frameworkcode'} );
