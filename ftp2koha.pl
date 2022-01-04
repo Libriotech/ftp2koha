@@ -32,6 +32,10 @@ use DateTime;
 use Pod::Usage;
 use Modern::Perl;
 
+use FindBin qw($Bin);
+use lib "$Bin/lib";
+use Util;
+
 binmode STDOUT, ":utf8";
 $|=1; # Flush output
 
@@ -254,12 +258,7 @@ RECORD: while ( my $record = $records->next() ) {
         say $record->as_formatted if $debug;
 
         ## Delete fields that should be deleted from the Libris record
-        foreach my $field_num ( @{ $config->{'delete_fields'} } ) {
-            say "Deleting $field_num";
-            my @fields = $record->field( $field_num );
-            say Dumper \@fields if $debug;
-            $record->delete_fields( @fields );
-        }
+        $record = delete_fields( $record, $config->{'delete_fields'}, $debug );
 
         ## Preserve fields that should be preserved
         # Delete these fields from the Libris record
