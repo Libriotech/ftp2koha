@@ -256,6 +256,8 @@ RECORD: while ( my $record = $records->next() ) {
         # Delete these fields from the Libris record
         foreach my $field_num ( @{ $config->{'preserve_fields'} } ) {
             say "Deleting $field_num";
+            my @fields = $biblio->metadata->record->field( $field_num );
+            say Dumper \@fields if $debug;
             $record->delete_fields( $record->field( $field_num ) );
         }
         # Now copy the same fields from the Koha record to the Libris record
