@@ -18,9 +18,9 @@ my $record = _get_record();
 my $merged_record = $record->clone;
 $merged_record = Util::delete_fields( $merged_record, $config->{ 'delete_fields' }, 0 );
 
-diag( $record->as_formatted );
-diag( '-----------------------------------------------------------' );
-diag( $merged_record->as_formatted );
+# diag( $record->as_formatted );
+# diag( '-----------------------------------------------------------' );
+# diag( $merged_record->as_formatted );
 
 isa_ok( $record,        'MARC::Record' );
 isa_ok( $merged_record, 'MARC::Record' );
