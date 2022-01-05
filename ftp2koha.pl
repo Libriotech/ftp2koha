@@ -261,21 +261,7 @@ RECORD: while ( my $record = $records->next() ) {
         $record = delete_fields( $record, $config->{'delete_fields'}, $debug );
 
         ## Preserve fields that should be preserved
-        # Delete these fields from the Libris record
-        foreach my $field_num ( @{ $config->{'preserve_fields'} } ) {
-            say "Deleting $field_num";
-            my @fields = $record->field( $field_num );
-            say Dumper \@fields if $debug;
-            $record->delete_fields( @fields );
-        }
-        # Now copy the same fields from the Koha record to the Libris record
-        foreach my $field_num ( @{ $config->{'preserve_fields'} } ) {
-            say "Copying $field_num";
-            my @fields = $biblio->metadata->record->field( $field_num );
-            say Dumper \@fields if $debug;
-            $summary->{'preserved_fields'} += scalar @fields;
-            $record->insert_fields_ordered( @fields );
-        }
+        $record = preserve_fields( $biblio, $record, $config->{'preserve_fields'}, $summary, $debug );
 
         say "--- MERGED RECORD ---" if $debug;
         say $record->as_formatted;
