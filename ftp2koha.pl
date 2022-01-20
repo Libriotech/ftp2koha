@@ -1,4 +1,4 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 
 # Copyright 2015 Magnus Enger Libriotech
 
@@ -50,8 +50,8 @@ my ( $config_file, $filename, $local_file, $test, $comment, $limit, $verbose, $d
 =head1 CONFIGURATION
 
 Most of the configuration of this script is done with a configuration file. See
-the F<sample_config.yml> file provided with this script for an example, and 
-read the comments in that file for details on how to configure it. 
+the F<sample_config.yml> file provided with this script for an example, and
+read the comments in that file for details on how to configure it.
 
 =cut
 
@@ -128,10 +128,24 @@ RECORD: while ( my $record = $records->next() ) {
 
     $record->encoding( 'UTF-8' );
 
+    my $itemdetails = '';
+
+=head1 MATCHING
+
+We need to check Koha to see if there are records we should merge with or replace,
+or if this is a new record that should be inserted.
+
+=head2 Match on Control Number (001) and Control Number Identifier (003)
+
+If we find a record with matching 001 and 003, we merge with/replace that record.
+There should only be one matching record.
+
+=cut
+
     my $sth = $dbh->prepare("
-        SELECT biblionumber, metadata 
-        FROM biblio_metadata 
-        WHERE 
+        SELECT biblionumber, metadata
+        FROM biblio_metadata
+        WHERE
           ExtractValue( metadata, '//controlfield[\@tag=\"001\"]' ) = '$id_001' AND
           ExtractValue( metadata, '//controlfield[\@tag=\"003\"]' ) = '$id_003'
     ");
@@ -139,108 +153,9 @@ RECORD: while ( my $record = $records->next() ) {
     my $hits = $sth->fetchall_arrayref;
     # print Dumper $hits if $debug;
 
-    my $itemdetails = '';
-
     # Proceed according to the number of hits found
-    if ( scalar @{ $hits } == 0 ) {
-        say "We have a new record, going to INSERT it." if $verbose;
-        $summary->{'action'} = 'INSERT';
+    if ( scalar @{ $hits } > 0 ) {
 
-        # We should add items according to the config file
-        my $item;
-
-        if ( $config->{'skip_items'} == 0 ) {
-
-            # Check if there are items that should be treated in a special way
-            if ( $config->{'special_items'} ) {
-                SPECIAL: foreach my $special ( @{ $config->{'special_items'} } ) {
-                    # Special treatment for controlfields
-                    if ( $record->field( $special->{'field'} ) && MARC::Field->is_controlfield_tag( $special->{'field'} ) ) {
-                        my $cfield = $record->field( $special->{'field'} )->data;
-                        say $cfield if $debug;
-                        my $substr_pos = $special->{'position'};
-                        my $position_data = substr $cfield, $substr_pos, 1;
-                        say $position_data if $debug;
-                        if ( $position_data eq $special->{'text'} ) {
-                            ( $item, $itemdetails ) = _make_item( $special );
-                            last SPECIAL; # Make sure we only add an item for the first match
-                        }
-                    }
-                    if (
-                        ! MARC::Field->is_controlfield_tag( $special->{'field'} ) &&
-                        $record->field( $special->{'field'} ) &&
-                        $record->subfield( $special->{'field'}, $special->{'subfield'} ) &&
-                        $record->subfield( $special->{'field'}, $special->{'subfield'} ) =~ m/$special->{'text'}/gi
-                    ) {
-                        ( $item, $itemdetails ) = _make_item( $special );
-                        last SPECIAL; # Make sure we only add an item for the first match
-                    }
-                }
-            } # End special_items
-
-            # If $itemdetails is still empty, none of the special cases took effect so we add a standard item
-            if ( $itemdetails eq '' ) {
-                # The rest of the items get the default values
-                ( $item, $itemdetails ) = _make_item( $config );
-            }
-
-            # Check if we should pick a callnumber from the record
-            # Only do this if there isn't one already
-            if ( !defined $item->{ 'itemcallnumber' } && $config->{'callnumber_field'} && $config->{'callnumber_subfield'} ) {
-                my $field    = $config->{'callnumber_field'};
-                my $subfield = $config->{'callnumber_subfield'};
-                if ( $record->field( $field ) && $record->subfield( $field, $subfield ) && $record->subfield( $field, $subfield ) ne '' ) {
-                    $item->{'itemcallnumber'} = $record->subfield( $field, $subfield );
-                }
-            }
-            say Dumper $item if $debug;
-            $itemdetails = "$config->{'952a'} $config->{'952b'} $config->{'952y'}";
-
-        } # End config skip_items
-
-        say "NEW RECORD";
-        say $record->as_formatted if $debug;
-
-        unless ( $test ) {
-
-            # Import the record and the item into Koha
-            my ( $biblionumber, $biblioitemnumber ) = AddBiblio( $record, $config->{'frameworkcode'} );
-            if ( $biblionumber ) {
-                say "New record saved with biblionumber=$biblionumber" if $verbose;
-                $summary->{'biblionumber'} = $biblionumber;
-            } else {
-                say "Ooops, something went wrong while saving the record!" if $verbose;
-            }
-
-            # Import the item, if we have defined it
-            if ( $item ) {
-                # Set the biblionumber
-                $item->{ 'biblionumber' } = $biblionumber;
-                # Set 952$x to "ftp2koha"
-                if ( $comment ) {
-                    $item->{ 'itemnotes_nonpublic' } = 'ftp2koha';
-                }
-                # Add the new item
-                my $new_item = Koha::Item->new( $item )->store;
-                # Get the itemnumber
-                my $itemnumber = $new_item->itemnumber;
-                if ( $itemnumber  ) {
-                    say "Added item with itemnumber = $itemnumber" if $verbose;
-                } else {
-                    say "Ooops, something went wrong while saving the item" if $verbose;
-                }
-            } else {
-                say "No item to add" if $verbose;
-            }
-
-        } else {
-
-            say "Item data, not imported (because of --test):";
-            say Dumper $item;
-            $summary->{'biblionumber'} = 'test';
-        }
-
-    } else {
         say "We have an existing record, going to UPDATE it." if $verbose;
         $summary->{'action'} = 'UPDATE';
         if ( scalar @{ $hits } > 1 ) {
@@ -284,6 +199,144 @@ RECORD: while ( my $record = $records->next() ) {
         }
 
         $itemdetails = 'No items changed';
+
+        $records_count++;
+        say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
+        push @done, $summary;
+
+        # We found a match, proceed to the next record
+        next RECORD;
+
+    } # End of matching on 001+003
+
+=head2 Match on ISBN
+
+Koha stores ISBNs in biblioitems.isbn. Data in this field can look like this:
+
+  9100132659 | 978-91-0-013265-1 | 978-91-7429-346-3 | 91-7429-346-X
+
+We take the ISBNs from our active record, transform them into possible variant
+forms and do a very inclusive lookup in biblioitems.isbn, to find potential
+candidates for a match. Then we compare ISBNs from the actual records to determine
+if we have a match or not.
+
+Matching on ISBNs is activated with the B<match_on_isbn> config variable.
+
+=cut
+
+    if ( $config->{'match_on_isbn'} ) {
+
+        $records_count++;
+        say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
+        push @done, $summary;
+
+        next RECORD;
+
+    } else {
+        say "No matching on ISBN" if $verbose;
+    } # End of matching on ISBN
+
+=head2 Insert a new record
+
+No matches so far, so we insert the active record as a new record.
+
+=cut
+
+    say "We have a new record, going to INSERT it." if $verbose;
+    $summary->{'action'} = 'INSERT';
+
+    # We should add items according to the config file
+    my $item;
+
+    if ( $config->{'skip_items'} == 0 ) {
+
+        # Check if there are items that should be treated in a special way
+        if ( $config->{'special_items'} ) {
+            SPECIAL: foreach my $special ( @{ $config->{'special_items'} } ) {
+                # Special treatment for controlfields
+                if ( $record->field( $special->{'field'} ) && MARC::Field->is_controlfield_tag( $special->{'field'} ) ) {
+                    my $cfield = $record->field( $special->{'field'} )->data;
+                    say $cfield if $debug;
+                    my $substr_pos = $special->{'position'};
+                    my $position_data = substr $cfield, $substr_pos, 1;
+                    say $position_data if $debug;
+                    if ( $position_data eq $special->{'text'} ) {
+                        ( $item, $itemdetails ) = _make_item( $special );
+                        last SPECIAL; # Make sure we only add an item for the first match
+                    }
+                }
+                if (
+                    ! MARC::Field->is_controlfield_tag( $special->{'field'} ) &&
+                    $record->field( $special->{'field'} ) &&
+                    $record->subfield( $special->{'field'}, $special->{'subfield'} ) &&
+                    $record->subfield( $special->{'field'}, $special->{'subfield'} ) =~ m/$special->{'text'}/gi
+                ) {
+                    ( $item, $itemdetails ) = _make_item( $special );
+                    last SPECIAL; # Make sure we only add an item for the first match
+                }
+            }
+        } # End special_items
+
+        # If $itemdetails is still empty, none of the special cases took effect so we add a standard item
+        if ( $itemdetails eq '' ) {
+            # The rest of the items get the default values
+            ( $item, $itemdetails ) = _make_item( $config );
+        }
+
+        # Check if we should pick a callnumber from the record
+        # Only do this if there isn't one already
+        if ( !defined $item->{ 'itemcallnumber' } && $config->{'callnumber_field'} && $config->{'callnumber_subfield'} ) {
+            my $field    = $config->{'callnumber_field'};
+            my $subfield = $config->{'callnumber_subfield'};
+            if ( $record->field( $field ) && $record->subfield( $field, $subfield ) && $record->subfield( $field, $subfield ) ne '' ) {
+                $item->{'itemcallnumber'} = $record->subfield( $field, $subfield );
+            }
+        }
+        say Dumper $item if $debug;
+        $itemdetails = "$config->{'952a'} $config->{'952b'} $config->{'952y'}";
+
+    } # End config skip_items
+
+    say "NEW RECORD";
+    say $record->as_formatted if $debug;
+
+    unless ( $test ) {
+
+        # Import the record and the item into Koha
+        my ( $biblionumber, $biblioitemnumber ) = AddBiblio( $record, $config->{'frameworkcode'} );
+        if ( $biblionumber ) {
+            say "New record saved with biblionumber=$biblionumber" if $verbose;
+            $summary->{'biblionumber'} = $biblionumber;
+        } else {
+            say "Ooops, something went wrong while saving the record!" if $verbose;
+        }
+
+        # Import the item, if we have defined it
+        if ( $item ) {
+            # Set the biblionumber
+            $item->{ 'biblionumber' } = $biblionumber;
+            # Set 952$x to "ftp2koha"
+            if ( $comment ) {
+                $item->{ 'itemnotes_nonpublic' } = 'ftp2koha';
+            }
+            # Add the new item
+            my $new_item = Koha::Item->new( $item )->store;
+            # Get the itemnumber
+            my $itemnumber = $new_item->itemnumber;
+            if ( $itemnumber  ) {
+                say "Added item with itemnumber = $itemnumber" if $verbose;
+            } else {
+                say "Ooops, something went wrong while saving the item" if $verbose;
+            }
+        } else {
+            say "No item to add" if $verbose;
+        }
+
+    } else {
+
+        say "Item data, not imported (because of --test):";
+        say Dumper $item;
+        $summary->{'biblionumber'} = 'test';
     }
 
     $records_count++;
@@ -292,11 +345,10 @@ RECORD: while ( my $record = $records->next() ) {
 
     last RECORD if $limit && $limit == $records_count;
 
-}
+} # End of record loop
+
 say "------------------------------" if $verbose;
 say "Done ($records_count records)" if $verbose;
-
-## Import the records into Koha
 
 ## Optional cleanup
 
@@ -327,9 +379,9 @@ Takes a configuration for an item:
     952y: 'LASE'  # Item type
     9527: '0'    # Not for loan. -1 = Ordered
     9528: 'BARN'  # Collection code. CCODE
-    barcode: auto   
+    barcode: auto
 
-And returns a hashref of item data plus a string to show home- and holdinglibrary, 
+And returns a hashref of item data plus a string to show home- and holdinglibrary,
 and itemtype.
 
 =cut
@@ -469,7 +521,7 @@ sub get_options {
 
     pod2usage( -exitval => 0 ) if $help;
     pod2usage( -msg => "\nMissing Argument: -c, --config required\n", -exitval => 1 ) if !$config_file;
-    
+
     # Test mode should always be verbose
     $verbose = 1 if $test;
 
