@@ -181,42 +181,9 @@ There should only be one matching record.
         }
         # We use the first one, even if there were more than 1
         my $biblionumber = $hits->[0]->[0];
-        my $biblio = Koha::Biblios->find($biblionumber);
-        say "biblionumber=$biblionumber" if $verbose;
-        $summary->{'biblionumber'} = $biblionumber;
 
-        say "--- KOHA RECORD ---" if $debug;
-        say $biblio->metadata->record->as_formatted if $debug;
-        say "--- LIBRIS RECORD ---" if $debug;
-        say $record->as_formatted if $debug;
-
-        ## Delete fields that should be deleted from the Libris record
-        $record = Util::delete_fields( $record, $config->{'delete_fields'}, $debug );
-
-        ## Preserve fields that should be preserved
-        $record = Util::preserve_fields( $biblio, $record, $config->{'preserve_fields'}, $summary, $debug );
-
-        say "--- MERGED RECORD ---" if $debug;
-        say $record->as_formatted;
-        # Diff
-        say "--- DIFF ---";
-        say diff \$biblio->metadata->record->as_formatted, \$record->as_formatted, { STYLE => "Text::Diff::Table" } if $debug;
-
-        # Save the changed record
-        unless ( $test ) {
-
-            my $res = ModBiblio( $record, $biblionumber, $config->{'frameworkcode'} );
-            if ( $res == 1 ) {
-                say "Record with biblionumber = $biblionumber was UPDATED" if $verbose;
-            } else {
-                say "Record with biblionumber = $biblionumber was NOT updated";
-            }
-
-        } else {
-            say "In test mode, no changes made" if $verbose;
-        }
-
-        $itemdetails = 'No items changed';
+        # Do the update
+        my ( $itemdetails, $summary ) = update_record( $biblionumber, $record, $summary, $config, $verbose, $debug );
 
         $records_count++;
         say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
@@ -381,6 +348,71 @@ foreach my $rec ( @done ) {
 }
 
 =head1 INTERNAL FUNCTIONS
+
+=head2 _update_record
+
+Takes:
+
+=over 4
+
+=item * a biblionumber for a biblio in Koha
+
+=item * a MARC::Record object for the record from the external source
+
+=item * config
+
+=item * verbose flag
+
+=item * debug flag
+
+=back
+
+=cut
+
+sub _update_record {
+
+    my ( $biblionumber, $record, $summary, $config, $verbose, $debug );
+
+    my $biblio = Koha::Biblios->find($biblionumber);
+    say "biblionumber=$biblionumber" if $verbose;
+    $summary->{'biblionumber'} = $biblionumber;
+
+    say "--- KOHA RECORD ---" if $debug;
+    say $biblio->metadata->record->as_formatted if $debug;
+    say "--- LIBRIS RECORD ---" if $debug;
+    say $record->as_formatted if $debug;
+
+    ## Delete fields that should be deleted from the Libris record
+    $record = Util::delete_fields( $record, $config->{'delete_fields'}, $debug );
+
+    ## Preserve fields that should be preserved
+    $record = Util::preserve_fields( $biblio, $record, $config->{'preserve_fields'}, $summary, $debug );
+
+    say "--- MERGED RECORD ---" if $debug;
+    say $record->as_formatted;
+    # Diff
+    say "--- DIFF ---";
+    say diff \$biblio->metadata->record->as_formatted, \$record->as_formatted, { STYLE => "Text::Diff::Table" } if $debug;
+
+    # Save the changed record
+    unless ( $test ) {
+
+        my $res = ModBiblio( $record, $biblionumber, $config->{'frameworkcode'} );
+        if ( $res == 1 ) {
+            say "Record with biblionumber = $biblionumber was UPDATED" if $verbose;
+        } else {
+            say "Record with biblionumber = $biblionumber was NOT updated";
+        }
+
+    } else {
+        say "In test mode, no changes made" if $verbose;
+    }
+
+    my $itemdetails = 'No items changed';
+
+    return ( $itemdetails, $summary );
+
+}
 
 =head2 _make_item
 
