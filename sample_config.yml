@@ -47,7 +47,12 @@ local_dir: "/tmp/"
 #     0 = no, keep the file
 cleanup: 1
 
+# Fields that sould be preserved (copied from the record in Koha to the incoming
+# record, replacing any fields of the same code in the incoming record). You
+# probably want to have at least 942 in this list, since this is a Koha specific
+# field that should be preserved.
 preserve_fields:
+  - 942
   - 562
   - 590
   - 591
