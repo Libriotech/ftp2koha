@@ -47,6 +47,15 @@ local_dir: "/tmp/"
 #     0 = no, keep the file
 cleanup: 1
 
+# Define fields whose content could make us skip records outright. We need to
+# define a field, a subfield and some text that might be contained in the
+# given subfield. The record will be skipped if one field/subfield has a match,
+# so there is an implied OR between the fields, not an AND.
+skip_records:
+  - field: 245
+    subfield: h
+    contains: "Elektronisk resurs"
+
 # Fields that sould be preserved (copied from the record in Koha to the incoming
 # record, replacing any fields of the same code in the incoming record). You
 # probably want to have at least 942 in this list, since this is a Koha specific

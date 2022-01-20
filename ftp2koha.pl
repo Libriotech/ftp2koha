@@ -118,13 +118,29 @@ RECORD: while ( my $record = $records->next() ) {
 
     my $summary;
 
-    # Check if the record we have is already in Koha
     say "------------------------------" if $verbose;
     my $id_001 = $record->field('001')->data();
     my $id_003 = $record->field('003')->data();
     say "ID from 001+003: $id_001 $id_003" if $verbose;
     $summary->{ 'id_001' } = $id_001;
     $summary->{ 'id_003' } = $id_003;
+
+    # Check if this is a record we should skip
+    if ( defined $config->{'skip_records'} ) {
+        foreach my $skip ( @{ $config->{'skip_records'} } ) {
+           my @contents = $record->subfield( $skip->{'field'}, $skip->{'subfield'} );
+           say Dumper @contents if $debug;
+           if ( @contents ) {
+                foreach my $content ( @contents ) {
+                   if ( defined $skip->{'contains'} && $content =~ m/$skip->{'contains'}/g ) {
+                       say "Skipping because '$content' contains '$skip->{'contains'}'" if $verbose;
+                       $summary->{'action'} = 'SKIP';
+                       next RECORD;
+                   }
+               }
+           }
+       }
+    }
 
     $record->encoding( 'UTF-8' );
 
