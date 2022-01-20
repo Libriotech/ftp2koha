@@ -183,7 +183,7 @@ There should only be one matching record.
         my $biblionumber = $hits->[0]->[0];
 
         # Do the update
-        my ( $itemdetails, $summary ) = update_record( $biblionumber, $record, $summary, $config, $verbose, $debug );
+        my ( $itemdetails, $summary ) = _update_record( $biblionumber, $record, $summary, $config, $verbose, $debug );
 
         $records_count++;
         say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
