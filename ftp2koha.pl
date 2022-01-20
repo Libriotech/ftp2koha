@@ -144,7 +144,7 @@ RECORD: while ( my $record = $records->next() ) {
     # Proceed according to the number of hits found
     if ( scalar @{ $hits } == 0 ) {
         say "We have a new record, going to INSERT it." if $verbose;
-    $summary->{'action'} = 'INSERT';
+        $summary->{'action'} = 'INSERT';
 
         # We should add items according to the config file
         my $item;
