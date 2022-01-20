@@ -116,6 +116,8 @@ my $dbh = C4::Context->dbh;
 
 RECORD: while ( my $record = $records->next() ) {
 
+    last RECORD if $limit && $limit == $records_count + 1;
+
     my $summary;
 
     say "------------------------------" if $verbose;
@@ -358,8 +360,6 @@ No matches so far, so we insert the active record as a new record.
     $records_count++;
     say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
     push @done, $summary;
-
-    last RECORD if $limit && $limit == $records_count;
 
 } # End of record loop
 
