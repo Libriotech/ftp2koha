@@ -16,7 +16,7 @@ my $config = Load $yaml;
 
 my $koha_record = _get_record1();
 # Show formatted record
-diag( $koha_record->as_formatted );
+# diag( $koha_record->as_formatted );
 # Check type
 isa_ok( $koha_record, 'MARC::Record' );
 # Check record in Koha has expected data
@@ -25,8 +25,8 @@ is ( $koha_record->subfield( '852', 'b' ), 'B', 'data ok' );
 
 my $incoming_record = _get_record2();
 # Show formatted record
-diag( '-----------------------------------------------------------' );
-diag( $incoming_record->as_formatted );
+# diag( '-----------------------------------------------------------' );
+# diag( $incoming_record->as_formatted );
 # Check type
 isa_ok( $incoming_record, 'MARC::Record' );
 # Check (incoming) record has expected data
@@ -36,8 +36,8 @@ is ( $incoming_record->subfield( '852', 'b' ), 'Y', 'data ok' );
 my $summary;
 $incoming_record = Util::preserve_fields( $koha_record, $incoming_record, $config->{ 'preserve_fields' }, $summary, 0 );
 # Show formatted record
-diag( '-----------------------------------------------------------' );
-diag( $incoming_record->as_formatted );
+# diag( '-----------------------------------------------------------' );
+# diag( $incoming_record->as_formatted );
 # Check type
 isa_ok( $incoming_record, 'MARC::Record' );
 # Check (incoming) record has expected data
