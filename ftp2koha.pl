@@ -371,7 +371,7 @@ Takes:
 
 sub _update_record {
 
-    my ( $biblionumber, $record, $summary, $config, $verbose, $debug );
+    my ( $biblionumber, $record, $summary, $config, $verbose, $debug ) = @_;
 
     my $biblio = Koha::Biblios->find($biblionumber);
     say "biblionumber=$biblionumber" if $verbose;
