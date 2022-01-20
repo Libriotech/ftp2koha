@@ -189,10 +189,10 @@ There should only be one matching record.
         say $record->as_formatted if $debug;
 
         ## Delete fields that should be deleted from the Libris record
-        $record = delete_fields( $record, $config->{'delete_fields'}, $debug );
+        $record = Util::delete_fields( $record, $config->{'delete_fields'}, $debug );
 
         ## Preserve fields that should be preserved
-        $record = preserve_fields( $biblio, $record, $config->{'preserve_fields'}, $summary, $debug );
+        $record = Util::preserve_fields( $biblio, $record, $config->{'preserve_fields'}, $summary, $debug );
 
         say "--- MERGED RECORD ---" if $debug;
         say $record->as_formatted;
