@@ -116,7 +116,7 @@ my $dbh = C4::Context->dbh;
 
 RECORD: while ( my $record = $records->next() ) {
 
-    last RECORD if $limit && $limit == $records_count + 1;
+    last RECORD if $limit && $limit == $records_count;
 
     my $summary;
 
