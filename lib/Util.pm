@@ -129,7 +129,7 @@ sub _normalize_isbn {
 
 =head2 _get_isbns_from_record
 
-  my $isbn = _get_isbns_from_record( $marc_record );
+  my @isbns = _get_isbns_from_record( $marc_record );
 
 Takes a MARC::Record as input. Returns an array of ISBN-numbers from 020$a (and
 nothing more).
