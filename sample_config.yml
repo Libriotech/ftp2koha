@@ -82,7 +82,7 @@ preserve_fields:
 add_fields:
   - field: 942
     subfields:
-      - c: BOK
+      c: BOK
 
 ### Local Koha instance
 
