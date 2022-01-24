@@ -16,6 +16,36 @@ use Data::Dumper;
 use Business::ISBN;
 use List::Compare;
 
+=head2 make_fields
+
+Takes a piece of configuration like this:
+
+  add_fields:
+    - field: 942
+      subfields:
+        c: BOK
+
+And returns a list of MARC fields that can be inserted into a record like this:
+
+  $record->insert_fields_ordered( Util:make_fields( $config->{'add_fields'} ) );
+
+=cut
+
+sub make_fields {
+
+    my ( $config ) = @_;
+
+    my @outfields;
+    foreach my $field ( @{ $config } ) {
+        # Create a new field
+        my $field = MARC::Field->new( $field->{ 'field' }, '', '', %{ $field->{ 'subfields' } } );
+        push @outfields, $field;
+    }
+
+    return @outfields;
+
+}
+
 =head2 match_on_isbn
 
   my $got_match = match_on_isbn( $koha_record, $incoming_record, $debug );

@@ -78,6 +78,12 @@ preserve_fields:
   - 852
   - 976
 
+# Add fields
+add_fields:
+  - field: 942
+    subfields:
+      - c: BOK
+
 ### Local Koha instance
 
 # Code for the framework the records should be imported with
