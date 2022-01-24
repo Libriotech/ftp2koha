@@ -320,7 +320,7 @@ No matches so far, so we insert the active record as a new record.
 
     # Check if there is any data we should add
     if ( defined $config->{'add_fields'} ) {
-        my @added_fields = Util:make_fields( $config->{'add_fields'} );
+        my @added_fields = Util::make_fields( $config->{'add_fields'} );
         say "Added fields:" if $debug;
         say Dumper @added_fields if $debug;
         $record->insert_fields_ordered( @added_fields );
