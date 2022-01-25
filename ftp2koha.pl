@@ -189,7 +189,7 @@ There should only be one matching record.
         say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
         push @done, $summary;
 
-        # We found a match, proceed to the next record
+        say "Found a match, going to look at next record" if $debug;
         next RECORD;
 
     } # End of matching on 001+003
@@ -245,13 +245,14 @@ Matching on ISBNs is activated with the B<match_on_isbn> config variable.
                 }
             }
 
+            $records_count++;
+            say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
+            push @done, $summary;
+
+            say "Found a match, going to look at next record" if $debug;
+            next RECORD;
+
         }
-
-        $records_count++;
-        say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
-        push @done, $summary;
-
-        next RECORD;
 
     } else {
         say "No matching on ISBN" if $verbose;
