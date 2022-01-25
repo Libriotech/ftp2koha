@@ -238,19 +238,22 @@ Matching on ISBNs is activated with the B<match_on_isbn> config variable.
                 my $result = Util::match_on_isbn( $biblio->metadata->record, $record, $debug );
                 say "match_on_isbn: $result" if $debug;
                 if ( $result && $result == 1 ) {
+
                     # We have a match!
                     $summary->{'action'} = 'UPDATEISBN';
                     my ( $itemdetails, $summary ) = _update_record( $candidate, $record, $summary, $config, $verbose, $debug );
-                    last CANDIDATE;
+
+                    $records_count++;
+                    say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
+                    push @done, $summary;
+
+                    say "Found a match, going to look at next record" if $debug;
+                    next RECORD;
+
                 }
             }
 
-            $records_count++;
-            say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
-            push @done, $summary;
-
-            say "Found a match, going to look at next record" if $debug;
-            next RECORD;
+            say "No match on ISBN" if $debug;
 
         }
 
