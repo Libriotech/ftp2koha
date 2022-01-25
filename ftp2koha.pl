@@ -223,16 +223,16 @@ Matching on ISBNs is activated with the B<match_on_isbn> config variable.
             # Turn ISBNs into SQL
             my $sql = "SELECT biblionumber FROM biblio_metadata WHERE biblionumber IN ( SELECT biblionumber FROM biblioitems WHERE isbn LIKE '";
             $sql .= join( "%' OR isbn LIKE '%", @{ $variations } );
-	    $sql .= "' );";
-	    say $sql if $debug;
+            $sql .= "' );";
+            say $sql if $debug;
 
-	    my $sth_isbn = $dbh->prepare( $sql );
-	    $sth_isbn->execute();
-	    my $hits_isbn = $sth_isbn->fetchall_hashref( 'biblionumber' );
-	    say Dumper $hits_isbn;
+            my $sth_isbn = $dbh->prepare( $sql );
+            $sth_isbn->execute();
+            my $hits_isbn = $sth_isbn->fetchall_hashref( 'biblionumber' );
+            say Dumper $hits_isbn;
 
             # Look trough all the candidates until we find one that matches
-	    CANDIDATE: foreach my $candidate ( keys %{ $hits_isbn } ) {
+            CANDIDATE: foreach my $candidate ( keys %{ $hits_isbn } ) {
                 say "Looking at biblionumber=$candidate" if $debug;
                 my $biblio = Koha::Biblios->find( $candidate );
                 my $result = Util::match_on_isbn( $biblio->metadata->record, $record, $debug );
@@ -242,8 +242,8 @@ Matching on ISBNs is activated with the B<match_on_isbn> config variable.
                     $summary->{'action'} = 'UPDATEISBN';
                     my ( $itemdetails, $summary ) = _update_record( $candidate, $record, $summary, $config, $verbose, $debug );
                     last CANDIDATE;
-		}
-	    }
+                }
+            }
 
         }
 
