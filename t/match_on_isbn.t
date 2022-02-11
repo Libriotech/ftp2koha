@@ -6,7 +6,7 @@ use Modern::Perl;
 use MARC::File::XML;
 use Test2::V0;
 use Test2::Bundle::More;
-plan 28;
+plan 29;
 
 use lib 'lib';
 use Util;
@@ -112,8 +112,12 @@ is_deeply( Util::_make_isbn_variations( '91-7001-661-5' ), $variations2, 'one IS
 is_deeply( Util::_make_isbn_variations( '9170016615' ),    $variations2, 'one ISBN10 without hyphens' );
 
 my $variations3 = [ '91-7001-661-5', '91-7166-116-6', '9170016615', '9171661166', '978-91-7001-661-5', '978-91-7166-116-6', '9789170016615', '9789171661166' ];
-is_deeply( Util::_make_isbn_variations( '978-91-7166-116-6', '9170016615' ), $variations3, 'one ISBN14 with hyphens, one ISBN10 without' );
-is_deeply( Util::_make_isbn_variations( '9789171661166', '91-7001-661-5' ),  $variations3, 'one ISBN14 without hyphens, one ISBN10 with' );
+is_deeply( Util::_make_isbn_variations( '978-91-7166-116-6', '9170016615' ), $variations3, 'one ISBN13 with hyphens, one ISBN10 without' );
+is_deeply( Util::_make_isbn_variations( '9789171661166', '91-7001-661-5' ),  $variations3, 'one ISBN13 without hyphens, one ISBN10 with' );
+
+# ISBNs that have caused trouble in the wild
+my $variations4 = [ '91-8033-188-2', '9180331882', '978-91-8033-188-3', '9789180331883' ];
+is_deeply( Util::_make_isbn_variations( '9789180331883' ), $variations4, 'one ISBN13 without hyphens' );
 
 sub _get_record1 {
 
