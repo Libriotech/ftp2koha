@@ -220,40 +220,46 @@ Matching on ISBNs is activated with the B<match_on_isbn> config variable.
             # Get all the variants of all the ISBNs
             my $variations = Util::_make_isbn_variations( @isbns );
 
-            # Turn ISBNs into SQL
-            my $sql = "SELECT biblionumber FROM biblio_metadata WHERE biblionumber IN ( SELECT biblionumber FROM biblioitems WHERE isbn LIKE '";
-            $sql .= join( "%' OR isbn LIKE '%", @{ $variations } );
-            $sql .= "' );";
-            say $sql if $debug;
+            if ( $variations ) {
 
-            my $sth_isbn = $dbh->prepare( $sql );
-            $sth_isbn->execute();
-            my $hits_isbn = $sth_isbn->fetchall_hashref( 'biblionumber' );
-            say Dumper $hits_isbn;
+                # Turn ISBNs into SQL
+                my $sql = "SELECT biblionumber FROM biblio_metadata WHERE biblionumber IN ( SELECT biblionumber FROM biblioitems WHERE isbn LIKE '";
+                $sql .= join( "%' OR isbn LIKE '%", @{ $variations } );
+                $sql .= "' );";
+                say $sql if $debug;
 
-            # Look trough all the candidates until we find one that matches
-            CANDIDATE: foreach my $candidate ( keys %{ $hits_isbn } ) {
-                say "Looking at biblionumber=$candidate" if $debug;
-                my $biblio = Koha::Biblios->find( $candidate );
-                my $result = Util::match_on_isbn( $biblio->metadata->record, $record, $debug );
-                say "match_on_isbn: $result" if $debug;
-                if ( $result && $result == 1 ) {
+                my $sth_isbn = $dbh->prepare( $sql );
+                $sth_isbn->execute();
+                my $hits_isbn = $sth_isbn->fetchall_hashref( 'biblionumber' );
+                say Dumper $hits_isbn;
 
-                    # We have a match!
-                    $summary->{'action'} = 'UPDATEISBN';
-                    my ( $itemdetails, $summary ) = _update_record( $candidate, $record, $summary, $config, $verbose, $debug );
+                # Look trough all the candidates until we find one that matches
+                CANDIDATE: foreach my $candidate ( keys %{ $hits_isbn } ) {
+                    say "Looking at biblionumber=$candidate" if $debug;
+                    my $biblio = Koha::Biblios->find( $candidate );
+                    my $result = Util::match_on_isbn( $biblio->metadata->record, $record, $debug );
+                    say "match_on_isbn: $result" if $debug;
+                    if ( $result && $result == 1 ) {
 
-                    $records_count++;
-                    say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
-                    push @done, $summary;
+                        # We have a match!
+                        $summary->{'action'} = 'UPDATEISBN';
+                        my ( $itemdetails, $summary ) = _update_record( $candidate, $record, $summary, $config, $verbose, $debug );
 
-                    say "Found a match, going to look at next record" if $debug;
-                    next RECORD;
+                        $records_count++;
+                        say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
+                        push @done, $summary;
 
+                        say "Found a match, going to look at next record" if $debug;
+                        next RECORD;
+
+                    }
                 }
-            }
 
-            say "No match on ISBN" if $debug;
+                say "No match on ISBN" if $debug;
+
+            } else {
+                say "Could not create variations on ISBN";
+            }
 
         }
 

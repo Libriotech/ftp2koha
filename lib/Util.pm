@@ -201,6 +201,7 @@ sub _make_isbn_variations {
     foreach my $raw_isbn ( @isbns_in ) {
         $isbns{ $raw_isbn }++;
         my $isbn = Business::ISBN->new( $raw_isbn );
+        return undef unless $isbn;
         # With hyphens
         $isbns{ $isbn->as_isbn10->as_string }++;
         $isbns{ $isbn->as_isbn13->as_string }++;
