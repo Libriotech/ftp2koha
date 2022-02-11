@@ -203,11 +203,19 @@ sub _make_isbn_variations {
         my $isbn = Business::ISBN->new( $raw_isbn );
         return undef unless $isbn;
         # With hyphens
-        $isbns{ $isbn->as_isbn10->as_string }++;
-        $isbns{ $isbn->as_isbn13->as_string }++;
+        if ( $isbn->as_isbn10 && $isbn->as_isbn10->as_string ) {
+            $isbns{ $isbn->as_isbn10->as_string }++;
+        }
+        if ( $isbn->as_isbn13 && $isbn->as_isbn13->as_string ) {
+            $isbns{ $isbn->as_isbn13->as_string }++;
+        }
         # Without hyphens
-        $isbns{ $isbn->as_isbn10->as_string([]) }++;
-        $isbns{ $isbn->as_isbn13->as_string([]) }++;
+        if ( $isbn->as_isbn10 && $isbn->as_isbn10->as_string([]) ) {
+            $isbns{ $isbn->as_isbn10->as_string([]) }++;
+        }
+        if ( $isbn->as_isbn13 && $isbn->as_isbn13->as_string([]) ) {
+            $isbns{ $isbn->as_isbn13->as_string([]) }++;
+        }
     }
 
     my @keys = sort keys %isbns;
