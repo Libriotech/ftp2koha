@@ -401,6 +401,10 @@ foreach my $rec ( @done ) {
     say "$rec->{ 'action' } $rec->{ 'biblionumber' } ($rec->{ 'id_001' } $rec->{ 'id_003' }) [$rec->{'preserved_fields'}]";
 }
 
+# This should be the last thing we output, so we can test for it in the log to
+# see if the script completed or not
+say "DONE";
+
 =head1 INTERNAL FUNCTIONS
 
 =head2 _update_record
