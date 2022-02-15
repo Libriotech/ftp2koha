@@ -6,7 +6,7 @@ use Modern::Perl;
 use MARC::File::XML;
 use Test2::V0;
 use Test2::Bundle::More;
-plan 29;
+plan 30;
 
 use lib 'lib';
 use Util;
@@ -117,7 +117,12 @@ is_deeply( Util::_make_isbn_variations( '9789171661166', '91-7001-661-5' ),  $va
 
 # ISBNs that have caused trouble in the wild
 my $variations4 = [ '91-8033-188-2', '9180331882', '978-91-8033-188-3', '9789180331883' ];
-is_deeply( Util::_make_isbn_variations( '9789180331883' ), $variations4, 'one ISBN13 without hyphens' );
+is_deeply( Util::_make_isbn_variations( '9789180331883' ), $variations4, 'problematic ISBN 9789180331883' );
+
+# At least this one was causing trouble because of an out of date RangeMessage.xml
+# See the README for how to avoid this
+my $variations5 = [ '91-8033-452-0', '9180334520', '978-91-8033-452-5', '9789180334525' ];
+is_deeply( Util::_make_isbn_variations( '9789180334525' ), $variations5, 'problematic ISBN 9789180334525' );
 
 sub _get_record1 {
 
