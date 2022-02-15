@@ -32,6 +32,30 @@ The script is designed to be run from cron at set intervals, like each night.
 
 See C<perldoc ftp2koha.pl> for a full list of options etc. 
 
+=head1 THINGS TO LOOK OUT FOR
+
+Here are some gotchas that you might run into.
+
+=head2 CANT'T CALL METHOD "fix_checksum"
+
+This script relies heasvily on the Perl module Business::ISBN for ISBN manipulation. 
+That module relies on some input data about ISBN publisher codes, which be out
+of date.
+
+See B<perldoc Business::ISBN::Data> for more details.
+
+=head2 Symptom
+
+Imports fail with an error message like this:
+
+  Can't call method "fix_checksum" on an undefined value at 
+  /usr/share/perl5/Business/ISBN13.pm line 63.
+
+=head2 Solution
+
+Download the XML file from L<https://www.isbn-international.org/range_file_generation>
+and use it to replace the old file at F</usr/share/perl5/Business/ISBN/RangeMessage.xml>.
+
 =head1 SPONSORS
 
 Initial development of this script was funded by 
