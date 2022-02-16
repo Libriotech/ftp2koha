@@ -202,6 +202,12 @@ sub _make_isbn_variations {
         $isbns{ $raw_isbn }++;
         my $isbn = Business::ISBN->new( $raw_isbn );
         return undef unless $isbn;
+        # TODO Make sure we have a valid ISBN
+        if ( $isbn->error ) {
+            say "ISBN error: " . $isbn->error_text;
+            say "ISBN error code: " . $isbn->error;
+            return undef;
+        }
         # With hyphens
         if ( $isbn->as_isbn10 && $isbn->as_isbn10->as_string ) {
             $isbns{ $isbn->as_isbn10->as_string }++;
