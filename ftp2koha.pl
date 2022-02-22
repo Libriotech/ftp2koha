@@ -114,6 +114,8 @@ if ( $config->{'marc_format'} && $config->{'marc_format'} eq 'xml' ) {
 
 my $dbh = C4::Context->dbh;
 
+## Loop over the records in the file
+
 RECORD: while ( my $record = $records->next() ) {
 
     last RECORD if $limit && $limit == $records_count;
@@ -445,6 +447,25 @@ sub _update_record {
 
     ## Preserve fields that should be preserved
     $record = Util::preserve_fields( $biblio, $record, $config->{'preserve_fields'}, $summary, $debug );
+
+    # Check if there are any fields we should add
+    if ( defined $config->{'add_fields'} ) {
+        # Generate the fields from the config
+        my @added_fields = Util::make_fields( $config->{'add_fields'} );
+        say "Added fields:" if $debug;
+        say Dumper @added_fields if $debug;
+        # Loop through the fields
+        foreach my $added_field ( @added_fields ) {
+            # Get fields with the same tag from the record
+            my @existing_fields = $record->field( $added_field->tag );
+            # Get the number of fields with the same tag
+            my $num_existing = scalar @existing_fields;
+            # Insert the field if it is not already there
+            if ( $num_existing == 0 ) {
+                $record->insert_fields_ordered( $added_field );
+            }
+        }
+    }
 
     say "--- MERGED RECORD ---" if $debug;
     say $record->as_formatted;
