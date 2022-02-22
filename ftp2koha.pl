@@ -452,8 +452,6 @@ sub _update_record {
     if ( defined $config->{'add_fields'} ) {
         # Generate the fields from the config
         my @added_fields = Util::make_fields( $config->{'add_fields'} );
-        say "Added fields:" if $debug;
-        say Dumper @added_fields if $debug;
         # Loop through the fields
         foreach my $added_field ( @added_fields ) {
             # Get fields with the same tag from the record
@@ -462,6 +460,8 @@ sub _update_record {
             my $num_existing = scalar @existing_fields;
             # Insert the field if it is not already there
             if ( $num_existing == 0 ) {
+                say "Added field:" if $debug;
+                say Dumper $added_field if $debug;
                 $record->insert_fields_ordered( $added_field );
             }
         }
