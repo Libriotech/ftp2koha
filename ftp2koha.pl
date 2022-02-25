@@ -278,6 +278,9 @@ No matches so far, so we insert the active record as a new record.
     say "We have a new record, going to INSERT it." if $verbose;
     $summary->{'action'} = 'INSERT';
 
+    say "--- INCOMING RECORD ---" if $verbose;
+    say $record->as_formatted if $verbose;
+
     # We should add items according to the config file
     my $item;
 
@@ -338,7 +341,10 @@ No matches so far, so we insert the active record as a new record.
         $record->insert_fields_ordered( @added_fields );
     }
 
-    say "NEW RECORD" if $verbose;
+    # Delete fields that should be deleted from the incoming record
+    $record = Util::delete_fields( $record, $config->{'delete_fields'}, $debug );
+
+    say "--- EDITED RECORD ---" if $verbose;
     say $record->as_formatted if $verbose;
 
     unless ( $test ) {
@@ -442,7 +448,7 @@ sub _update_record {
     say "--- LIBRIS RECORD ---" if $verbose;
     say $record->as_formatted if $verbose;
 
-    ## Delete fields that should be deleted from the Libris record
+    ## Delete fields that should be deleted from the incoming record
     $record = Util::delete_fields( $record, $config->{'delete_fields'}, $debug );
 
     ## Preserve fields that should be preserved
