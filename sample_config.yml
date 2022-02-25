@@ -29,6 +29,11 @@ ftp_path: "/path/to/file/"
 # 
 ftp_file: "MyLib.%Y%m%d.marc"
 
+# Expected format of incoming files. Possible values:
+# - marc (ISO2709)
+# - marcxml
+marc_format: xml
+
 # Number of hours that should be subtracted from the time at which the script
 # is run, in order to calculate the date part of the filename above.
 # Example: A new file is published at 2am each night, but the date part of the
@@ -56,10 +61,23 @@ skip_records:
     subfield: h
     contains: "Elektronisk resurs"
 
+# Fields that should be deleted from the incoming record
+delete_fields:
+  - field: 010
+  - field: 013
+  - field: 015
+  - field: 016
+  - field: 017
+  - field: 030
+  - field: 032
+  - field: 033
+  - field: 034
+  - field: 036
+
 # Fields that sould be preserved (copied from the record in Koha to the incoming
 # record, replacing any fields of the same code in the incoming record). You
 # probably want to have at least 942 in this list, since this is a Koha specific
-# field that should be preserved.
+# field that should be removed or overwritten by anything from the external source.
 preserve_fields:
   - 942
   - 562
@@ -78,7 +96,7 @@ preserve_fields:
   - 852
   - 976
 
-# Add fields
+# Add fields to both new and old records (if the field does not already exist)
 add_fields:
   - field: 942
     subfields:
