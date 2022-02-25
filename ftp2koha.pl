@@ -60,7 +60,7 @@ if ( !-e $config_file ) {
     print "The file $config_file does not exist...\n";
     exit;
 }
-say "Using config from $config_file" if $verbose;
+say "Using config from $config_file" if $debug;
 # Load the config
 my $config = LoadFile( $config_file );
 
@@ -80,35 +80,35 @@ if ( $local_file ) {
         $filename = DateTime->now->subtract( hours => $config->{'subtract_hours'} )->strftime( $config->{'ftp_file'} );
     }
     $local_path = $config->{'local_dir'} . $filename;
-    say "Going to download $filename to $local_path" if $verbose;
+    say "Going to download $filename to $local_path" if $debug;
 
     # Do the actual download (with wget)
     my $ftp = "wget -O $local_path ftp://" . $config->{'ftp_host'} . $config->{'ftp_path'} . $filename;
-    say "Going to do $ftp" if $verbose;
+    say "Going to do $ftp" if $debug;
     `$ftp`;
 
     # Check that the file now exists locally, and has a non-zero size
     if ( ! -s $local_path ) {
         die "$local_path does not exist or is empty!";
     } else {
-        say "Local file $local_path exists" if $verbose;
+        say "Local file $local_path exists" if $debug;
     }
 
 }
 
-say "Going to use $local_path" if $verbose;
+say "Going to use $local_path" if $debug;
 
 ## Import the data into Koha
 
-say "Starting to massage MARC records" if $verbose;
+say "Starting to massage MARC records" if $debug;
 my $records_count = 0;
 my $records;
 
 if ( $config->{'marc_format'} && $config->{'marc_format'} eq 'xml' ) {
-    say "Got a MARCXML file" if $verbose;
+    say "Got a MARCXML file" if $debug;
     $records = MARC::File::XML->in( $local_path );
 } else {
-    say "Got an ISO2709 file" if $verbose;
+    say "Got an ISO2709 file" if $debug;
     $records = MARC::File::USMARC->in( $local_path );
 }
 
@@ -191,7 +191,7 @@ There should only be one matching record.
         say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
         push @done, $summary;
 
-        say "Found a match, going to look at next record" if $debug;
+        say "Found a match based on 001/003, going to look at next record" if $verbose;
         next RECORD;
 
     } # End of matching on 001+003
@@ -233,14 +233,14 @@ Matching on ISBNs is activated with the B<match_on_isbn> config variable.
                 my $sth_isbn = $dbh->prepare( $sql );
                 $sth_isbn->execute();
                 my $hits_isbn = $sth_isbn->fetchall_hashref( 'biblionumber' );
-                say Dumper $hits_isbn;
+                say Dumper $hits_isbn if $debug;
 
                 # Look trough all the candidates until we find one that matches
                 CANDIDATE: foreach my $candidate ( keys %{ $hits_isbn } ) {
-                    say "Looking at biblionumber=$candidate" if $debug;
+                    say "Looking at biblionumber=$candidate" if $verbose;
                     my $biblio = Koha::Biblios->find( $candidate );
                     my $result = Util::match_on_isbn( $biblio->metadata->record, $record, $debug );
-                    say "match_on_isbn: $result" if $debug;
+                    say "match_on_isbn: $result" if $verbose;
                     if ( $result && $result == 1 ) {
 
                         # We have a match!
@@ -251,16 +251,16 @@ Matching on ISBNs is activated with the B<match_on_isbn> config variable.
                         say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
                         push @done, $summary;
 
-                        say "Found a match, going to look at next record" if $debug;
+                        say "Found a match based on ISBN, going to look at next record" if $verbose;
                         next RECORD;
 
                     }
                 }
 
-                say "No match on ISBN" if $debug;
+                say "No match on ISBN" if $verbose;
 
             } else {
-                say "Could not create variations on ISBN";
+                say "Could not create variations on ISBN" if $verbose;
             }
 
         }
@@ -338,8 +338,8 @@ No matches so far, so we insert the active record as a new record.
         $record->insert_fields_ordered( @added_fields );
     }
 
-    say "NEW RECORD";
-    say $record->as_formatted if $debug;
+    say "NEW RECORD" if $verbose;
+    say $record->as_formatted if $verbose;
 
     unless ( $test ) {
 
@@ -375,8 +375,8 @@ No matches so far, so we insert the active record as a new record.
 
     } else {
 
-        say "Item data, not imported (because of --test):";
-        say Dumper $item;
+        say "Item data not imported (because of --test):" if $verbose;
+        say Dumper $item if $debug;
         $summary->{'biblionumber'} = 'test';
     }
 
@@ -393,19 +393,19 @@ say "Done ($records_count records)" if $verbose;
 
 if ( $config->{'cleanup'} ) {
     unlink $local_path;
-    say "$local_path deleted" if $verbose;
+    say "$local_path deleted" if $debug;
 }
 
 say "*** This was a test run, no records were imported ***" if $test;
 say "Summary:" if $verbose;
 foreach my $rec ( @done ) {
     $rec->{'preserved_fields'} = 0 unless defined $rec->{'preserved_fields'};
-    say "$rec->{ 'action' } $rec->{ 'biblionumber' } ($rec->{ 'id_001' } $rec->{ 'id_003' }) [$rec->{'preserved_fields'}]";
+    say "$rec->{ 'action' } $rec->{ 'biblionumber' } ($rec->{ 'id_001' } $rec->{ 'id_003' }) [$rec->{'preserved_fields'}]" if $verbose;
 }
 
 # This should be the last thing we output, so we can test for it in the log to
 # see if the script completed or not
-say "DONE";
+say "DONE" if $verbose;
 
 =head1 INTERNAL FUNCTIONS
 
@@ -437,10 +437,10 @@ sub _update_record {
     say "biblionumber=$biblionumber" if $verbose;
     $summary->{'biblionumber'} = $biblionumber;
 
-    say "--- KOHA RECORD ---" if $debug;
-    say $biblio->metadata->record->as_formatted if $debug;
-    say "--- LIBRIS RECORD ---" if $debug;
-    say $record->as_formatted if $debug;
+    say "--- KOHA RECORD ---" if $verbose;
+    say $biblio->metadata->record->as_formatted if $verbose;
+    say "--- LIBRIS RECORD ---" if $verbose;
+    say $record->as_formatted if $verbose;
 
     ## Delete fields that should be deleted from the Libris record
     $record = Util::delete_fields( $record, $config->{'delete_fields'}, $debug );
@@ -467,10 +467,10 @@ sub _update_record {
         }
     }
 
-    say "--- MERGED RECORD ---" if $debug;
-    say $record->as_formatted;
+    say "--- MERGED RECORD ---" if $verbose;
+    say $record->as_formatted if $verbose;
     # Diff
-    say "--- DIFF ---";
+    say "--- DIFF ---" if $debug;
     say diff \$biblio->metadata->record->as_formatted, \$record->as_formatted, { STYLE => "Text::Diff::Table" } if $debug;
 
     # Save the changed record
@@ -480,7 +480,7 @@ sub _update_record {
         if ( $res == 1 ) {
             say "Record with biblionumber = $biblionumber was UPDATED" if $verbose;
         } else {
-            say "Record with biblionumber = $biblionumber was NOT updated";
+            say "Record with biblionumber = $biblionumber was NOT updated" if $verbose;
         }
 
     } else {
@@ -528,7 +528,7 @@ sub _make_item {
     };
     if ( defined $config->{'barcode'} && $config->{'barcode'} eq 'auto' ) {
         my $newbarcode = _get_next_barcode();
-        say "Going to add barcode=$newbarcode";
+        say "Going to add barcode=$newbarcode" if $debug;
         $item->{ 'barcode' } = $newbarcode;
     }
     my $itemdetails = "$config->{'952a'} $config->{'952b'} $config->{'952y'}";
