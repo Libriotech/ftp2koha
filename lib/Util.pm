@@ -315,7 +315,9 @@ sub filter_on_852b {
     foreach my $field ( @fields ) {
         if ( $field->subfield( 'b' ) ) {
             # Delete tjhe whole field if the value of 852$b is not in the filter_values
-            unless ( defined $filter_values->{ $field->subfield( 'b' ) } ) {
+            my $b = $field->subfield( 'b' );
+            unless ( defined $filter_values->{ $b } ) {
+                say "Deleting field with 852\$b = $b" if $debug;
                 $record->delete_field( $field );
             }
         }
