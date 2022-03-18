@@ -319,6 +319,8 @@ sub filter_on_852b {
             unless ( defined $filter_values->{ $b } ) {
                 say "Deleting field with 852\$b = $b" if $debug;
                 $record->delete_field( $field );
+            } else {
+                say "Keeping field with 852\$b = $b" if $debug;
             }
         }
     }
