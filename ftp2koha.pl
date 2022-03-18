@@ -344,6 +344,9 @@ No matches so far, so we insert the active record as a new record.
     # Delete fields that should be deleted from the incoming record
     $record = Util::delete_fields( $record, $config->{'delete_fields'}, $debug );
 
+    # Remove 852-fields that we do not want to keep
+    $record = Util::filter_on_852b( $record, $config->{'filter_on_852b'}, $debug );
+
     say "--- EDITED RECORD ---" if $verbose;
     say $record->as_formatted if $verbose;
 
@@ -450,6 +453,9 @@ sub _update_record {
 
     ## Delete fields that should be deleted from the incoming record
     $record = Util::delete_fields( $record, $config->{'delete_fields'}, $debug );
+
+    # Remove 852-fields that we do not want to keep
+    $record = Util::filter_on_852b( $record, $config->{'filter_on_852b'}, $debug );
 
     ## Preserve fields that should be preserved
     $record = Util::preserve_fields( $biblio, $record, $config->{'preserve_fields'}, $summary, $debug );

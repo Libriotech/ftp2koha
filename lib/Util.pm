@@ -286,4 +286,43 @@ sub delete_fields {
 
 }
 
+=head2 filter_on_852b
+
+Takes a list of values (defined as a hash with 1 as values, for convenience):
+
+  filter_on_852b:
+    x: 1
+    y: 1
+
+Select all 852-fields and checks if the value in subfield b is in the list above.
+If it is, the field is kept. If it is not, the field is deleted.
+
+Returns the record, sans the deleted fields.
+
+If the filter_values is undef, the record is returned unchanged.
+
+=cut
+
+sub filter_on_852b {
+
+    my ( $record, $filter_values, $debug ) = @_;
+
+    # Return the record if the filter_values are not defined
+    return $record unless $filter_values;
+
+     # Loop over all 852's
+    my @fields = $record->field( '852' );
+    foreach my $field ( @fields ) {
+        if ( $field->subfield( 'b' ) ) {
+            # Delete tjhe whole field if the value of 852$b is not in the filter_values
+            unless ( defined $filter_values->{ $field->subfield( 'b' ) } ) {
+                $record->delete_field( $field );
+            }
+        }
+    }
+
+    return $record;
+
+}
+
 1;
