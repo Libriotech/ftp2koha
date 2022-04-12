@@ -299,7 +299,7 @@ If it is, the field is kept. If it is not, the field is deleted.
 
 Returns the record, sans the deleted fields.
 
-If the filter_values is undef, the record is returned unchanged.
+If filter_values is undef, the record is returned unchanged.
 
 =cut
 
@@ -314,7 +314,7 @@ sub filter_on_852b {
     my @fields = $record->field( '852' );
     foreach my $field ( @fields ) {
         if ( $field->subfield( 'b' ) ) {
-            # Delete tjhe whole field if the value of 852$b is not in the filter_values
+            # Delete the whole field if the value of 852$b is not in the filter_values
             my $b = $field->subfield( 'b' );
             unless ( defined $filter_values->{ $b } ) {
                 say "Deleting field with 852\$b = $b" if $debug;
@@ -323,6 +323,42 @@ sub filter_on_852b {
                 say "Keeping field with 852\$b = $b" if $debug;
             }
         }
+    }
+
+    return $record;
+
+}
+
+=head2 clean_942_6
+
+Some records have 942$6 = '_' (underscore), and this seems to cause problems
+when updating the record. This sub will walk through all 942 fields, and remove
+the whole field, if the only subfield is 942$6 and the value of that field 
+is _ (underscore).
+
+=cut
+
+sub clean_942_6 {
+
+    my ( $record ) = @_;
+
+    my @fields = $record->field( '942' );
+    return $record if scalar @fields == 0;
+
+    # We have at least one 942 field
+    FIELD: foreach my $field ( @fields ) {
+
+        # Get the subfields
+        my @subfields = $field->subfields();
+
+        # Process next field if there is more than one subfield
+        next FIELD if scalar @subfields > 1;
+
+        # Check if this is what we are looking for
+        if ( defined $field->subfield( '6' ) && $field->subfield( '6' ) eq '_' ) {
+            $record->delete_field( $field );
+        }
+
     }
 
     return $record;
