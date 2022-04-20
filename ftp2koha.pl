@@ -457,6 +457,9 @@ sub _update_record {
     # Remove 852-fields that we do not want to keep
     $record = Util::filter_on_852b( $record, $config->{'filter_on_852b'}, $debug );
 
+    # Delete 942-fields where the only content is $6 = '_' (underscore)
+    $record = Util::clean_942_6( $record, $debug );
+
     ## Preserve fields that should be preserved
     $record = Util::preserve_fields( $biblio, $record, $config->{'preserve_fields'}, $summary, $debug );
 
