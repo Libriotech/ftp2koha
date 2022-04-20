@@ -23,7 +23,7 @@ is ( $record->subfield( '942', '6' ), '_', '942$6 present' );
 Util::clean_942_6( $record );
 
 # Show formatted record
-diag( $record->as_formatted );
+# diag( $record->as_formatted );
 
 # Check record in Koha has expected data in what has now become the first 942 field
 is ( $record->subfield( '942', '6' ), undef, '942$6 removed' );
