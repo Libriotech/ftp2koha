@@ -52,6 +52,10 @@ local_dir: "/tmp/"
 #     0 = no, keep the file
 cleanup: 1
 
+# If matching on 001+003 fails, we can optionally fall back to matching on only
+# 001.
+fallback_to_001_matching: 0
+
 # Define fields whose content could make us skip records outright. We need to
 # define a field, a subfield and some text that might be contained in the
 # given subfield. The record will be skipped if one field/subfield has a match,

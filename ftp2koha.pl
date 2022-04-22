@@ -171,7 +171,40 @@ There should only be one matching record.
     ");
     $sth->execute();
     my $hits = $sth->fetchall_arrayref;
-    # print Dumper $hits if $debug;
+    say "Matching on 001+003" if $debug;
+    say Dumper $hits if $debug;
+
+=head2 Fallback to matching only on Control Number (001)
+
+If
+
+=over 4
+
+=item * we did not find any matches, and
+
+=item * fallback_to_001_matching is set to 1, and
+
+=item * 003 is empty
+
+we do another matching, similar to the one above, but matching only on 001, not on
+003.
+
+=cut
+
+    if ( scalar @{ $hits } == 0 && defined $config->{'fallback_to_001_matching'} && $config->{'fallback_to_001_matching'} == 1 && $id_003 eq '' ) {
+
+        my $sth_fallback = $dbh->prepare("
+            SELECT biblionumber, metadata
+            FROM biblio_metadata
+            WHERE
+              ExtractValue( metadata, '//controlfield[\@tag=\"001\"]' ) = '$id_001'
+        ");
+        $sth_fallback->execute();
+        $hits = $sth_fallback->fetchall_arrayref;
+        say "Matching on 001" if $debug;
+        say Dumper $hits if $debug;
+
+    }
 
     # Proceed according to the number of hits found
     if ( scalar @{ $hits } > 0 ) {
