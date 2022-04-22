@@ -56,6 +56,12 @@ cleanup: 1
 # 001.
 fallback_to_001_matching: 0
 
+# If this is set to one, matching on ISBN will be done if matching on 001/003
+# fails. In order to give a match, there must be one 020-field that is identical
+# in both records, that means they must have exactly the same subfields with
+# exactly the same values.
+match_on_isbn: 1
+
 # Define fields whose content could make us skip records outright. We need to
 # define a field, a subfield and some text that might be contained in the
 # given subfield. The record will be skipped if one field/subfield has a match,
