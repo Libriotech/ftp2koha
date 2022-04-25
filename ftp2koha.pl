@@ -184,14 +184,12 @@ If
 
 =item * fallback_to_001_matching is set to 1, and
 
-=item * 003 is empty
-
 we do another matching, similar to the one above, but matching only on 001, not on
 003.
 
 =cut
 
-    if ( scalar @{ $hits } == 0 && defined $config->{'fallback_to_001_matching'} && $config->{'fallback_to_001_matching'} == 1 && $id_003 eq '' ) {
+    if ( scalar @{ $hits } == 0 && defined $config->{'fallback_to_001_matching'} && $config->{'fallback_to_001_matching'} == 1 ) {
 
         my $sth_fallback = $dbh->prepare("
             SELECT biblionumber, metadata
