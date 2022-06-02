@@ -315,7 +315,7 @@ No matches so far, so we insert the active record as a new record.
     # We should add items according to the config file
     my $item;
 
-    if ( $config->{'skip_items'} == 0 ) {
+    if ( defined $config->{'skip_items'} && $config->{'skip_items'} == 0 ) {
 
         # Check if there are items that should be treated in a special way
         if ( $config->{'special_items'} ) {
