@@ -682,7 +682,7 @@ sub get_options {
         'f|filename=s'  => \$filename,
         'l|localfile=s' => \$local_file,
         't|test'        => \$test,
-        'comment'       => \$comment,
+        'comment=s'     => \$comment,
         'limit=i'       => \$limit,
         'v|verbose'     => \$verbose,
         'd|debug'       => \$debug,
