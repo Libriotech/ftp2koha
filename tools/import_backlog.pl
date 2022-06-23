@@ -48,7 +48,7 @@ while ( $start_t <= $end_t ) {
 
     my $logfilepath = "/etc/koha/sites/$kohasite/ftp2koha/ftp2koha-$kohasite-$today-backlog-$ymd.log";
 
-    my $cmd = "sudo /usr/sbin/koha-shell -c "perl $script -c $configfile --debug --verbose --filename $filename" $kohasite &> $logfilepath";
+    my $cmd = "sudo /usr/sbin/koha-shell -c \"perl $script -c $configfile --debug --verbose --filename $filename\" $kohasite &> $logfilepath";
     say $cmd if $debug;
     `$cmd`;
 
