@@ -120,6 +120,8 @@ RECORD: while ( my $record = $records->next() ) {
 
     last RECORD if $limit && $limit == $records_count;
 
+    $record->encoding( 'UTF-8' );
+
     my $summary;
 
     say "------------------------------" if $verbose;
@@ -145,8 +147,6 @@ RECORD: while ( my $record = $records->next() ) {
            }
        }
     }
-
-    $record->encoding( 'UTF-8' );
 
     my $itemdetails = '';
 
