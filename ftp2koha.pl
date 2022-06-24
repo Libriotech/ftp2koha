@@ -270,7 +270,7 @@ Matching on ISBNs is activated with the B<match_on_isbn> config variable.
                 # Look trough all the candidates until we find one that matches
                 CANDIDATE: foreach my $candidate ( keys %{ $hits_isbn } ) {
                     say "Looking at biblionumber=$candidate" if $verbose;
-                    my $biblio = find_biblio( $candidate );
+                    my $biblio = Util::find_biblio( $candidate );
                     if ( $biblio ) {
                         my $result = Util::match_on_isbn( $biblio->metadata->record, $record, $debug );
                         say "match_on_isbn: $result" if $verbose;
@@ -482,7 +482,7 @@ sub _update_record {
     $summary->{'biblionumber'} = $biblionumber;
 
     say "--- KOHA RECORD ---" if $verbose;
-    my $biblio = find_biblio( $biblionumber );
+    my $biblio = Util::find_biblio( $biblionumber );
     if ( $biblio ) {
         say $biblio->metadata->record->as_formatted if $verbose;
     } else {
