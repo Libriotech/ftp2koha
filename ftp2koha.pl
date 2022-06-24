@@ -29,7 +29,6 @@ use Getopt::Long;
 use Data::Dumper;
 $Data::Dumper::Sortkeys = 1;
 use DateTime;
-use Try::Tiny qw( catch try );
 use Pod::Usage;
 use Modern::Perl;
 

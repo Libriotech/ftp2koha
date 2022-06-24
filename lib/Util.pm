@@ -15,6 +15,7 @@ use MARC::Record;
 use Data::Dumper;
 use Business::ISBN;
 use List::Compare;
+use Try::Tiny qw( catch try );
 
 =head2 make_fields
 
