@@ -29,6 +29,7 @@ use Getopt::Long;
 use Data::Dumper;
 $Data::Dumper::Sortkeys = 1;
 use DateTime;
+use Try::Tiny qw( catch try );
 use Pod::Usage;
 use Modern::Perl;
 
@@ -269,22 +270,26 @@ Matching on ISBNs is activated with the B<match_on_isbn> config variable.
                 # Look trough all the candidates until we find one that matches
                 CANDIDATE: foreach my $candidate ( keys %{ $hits_isbn } ) {
                     say "Looking at biblionumber=$candidate" if $verbose;
-                    my $biblio = Koha::Biblios->find( $candidate );
-                    my $result = Util::match_on_isbn( $biblio->metadata->record, $record, $debug );
-                    say "match_on_isbn: $result" if $verbose;
-                    if ( $result && $result == 1 ) {
+                    my $biblio = find_biblio( $candidate );
+                    if ( $biblio ) {
+                        my $result = Util::match_on_isbn( $biblio->metadata->record, $record, $debug );
+                        say "match_on_isbn: $result" if $verbose;
+                        if ( $result && $result == 1 ) {
 
-                        # We have a match!
-                        $summary->{'action'} = 'UPDATEISBN';
-                        my ( $itemdetails, $summary ) = _update_record( $candidate, $record, $summary, $config, $verbose, $debug );
+                            # We have a match!
+                            $summary->{'action'} = 'UPDATEISBN';
+                            my ( $itemdetails, $summary ) = _update_record( $candidate, $record, $summary, $config, $verbose, $debug );
 
-                        $records_count++;
-                        say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
-                        push @done, $summary;
+                            $records_count++;
+                            say "$records_count: " . $record->title . " [$itemdetails]" if $verbose;
+                            push @done, $summary;
 
-                        say "Found a match based on ISBN, going to look at next record" if $verbose;
-                        next RECORD;
+                            say "Found a match based on ISBN, going to look at next record" if $verbose;
+                            next RECORD;
 
+                        }
+                    } else {
+                        say "Bad biblionumber=$candidate" if $verbose;
                     }
                 }
 
@@ -473,12 +478,17 @@ sub _update_record {
 
     my ( $biblionumber, $record, $summary, $config, $verbose, $debug ) = @_;
 
-    my $biblio = Koha::Biblios->find($biblionumber);
     say "biblionumber=$biblionumber" if $verbose;
     $summary->{'biblionumber'} = $biblionumber;
 
     say "--- KOHA RECORD ---" if $verbose;
-    say $biblio->metadata->record->as_formatted if $verbose;
+    my $biblio = find_biblio( $biblionumber );
+    if ( $biblio ) {
+        say $biblio->metadata->record->as_formatted if $verbose;
+    } else {
+        say "Bad biblionumber=$biblionumber" if $verbose;
+    }
+
     say "--- LIBRIS RECORD ---" if $verbose;
     say $record->as_formatted if $verbose;
 
@@ -488,8 +498,10 @@ sub _update_record {
     # Remove 852-fields that we do not want to keep
     $record = Util::filter_on_852b( $record, $config->{'filter_on_852b'}, $debug );
 
-    ## Preserve fields that should be preserved
-    $record = Util::preserve_fields( $biblio, $record, $config->{'preserve_fields'}, $summary, $debug );
+    if ( $biblio ) {
+        ## Preserve fields that should be preserved
+        $record = Util::preserve_fields( $biblio, $record, $config->{'preserve_fields'}, $summary, $debug );
+    }
 
     # Check if there are any fields we should add
     if ( defined $config->{'add_fields'} ) {
@@ -512,9 +524,12 @@ sub _update_record {
 
     say "--- MERGED RECORD ---" if $verbose;
     say $record->as_formatted if $verbose;
-    # Diff
-    say "--- DIFF ---" if $debug;
-    say diff \$biblio->metadata->record->as_formatted, \$record->as_formatted, { STYLE => "Text::Diff::Table" } if $debug;
+
+    if ( $biblio ) {
+        # Diff
+        say "--- DIFF ---" if $debug;
+        say diff \$biblio->metadata->record->as_formatted, \$record->as_formatted, { STYLE => "Text::Diff::Table" } if $debug;
+    }
 
     # Save the changed record
     unless ( $test ) {

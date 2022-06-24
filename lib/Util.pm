@@ -329,4 +329,30 @@ sub filter_on_852b {
 
 }
 
+=head2 find_biblio
+
+Finds a given biblio from Koha, in a way that safeguards against broken records.
+
+If the record to be found is broken, undef is returned.
+
+=cut
+
+sub find_biblio {
+
+    my ( $biblionumber ) = @_;
+
+    try {
+
+        my $biblio = Koha::Biblios->find( $biblionumber );
+        $biblio->metadata->record;
+        return $biblio;
+
+    } catch {
+
+        return undef;
+
+    }
+
+}
+
 1;
