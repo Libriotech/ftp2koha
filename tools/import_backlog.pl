@@ -30,7 +30,7 @@ my $script = "/opt/ftp2koha/ftp2koha.pl";
 my ( $kohasite, $start, $end, $verbose, $debug ) = get_options();
 
 # Get the config from file
-my $configfile = "/etc/koha/sites/$kohasite/ftp2koha-config.yaml";
+my $configfile = "/etc/koha/sites/$kohasite/ftp2koha-config-$kohasite.yaml";
 if ( !-e $configfile ) { die "The file $configfile does not exist..."; }
 my $config = LoadFile( $configfile );
 
