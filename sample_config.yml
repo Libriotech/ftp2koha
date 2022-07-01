@@ -112,6 +112,15 @@ add_fields:
     subfields:
       c: BOK
 
+# Add item subfields based on fields in the record. This example will create
+# 952$z, with a value concatenated from all 852$x fields in the record. If there
+# are multiple 852$x, they will be separated by the "delimiter" string.
+item_values_from_record:
+  - itemfield: z
+    recordfield: 852
+    recordsubfield: x
+    delimiter: " | "
+
 ### Local Koha instance
 
 # Code for the framework the records should be imported with

@@ -47,6 +47,57 @@ sub make_fields {
 
 }
 
+=head2 item_values_from_record
+
+Takes a field, a record and some config like this:
+
+  item_values_from_record:
+    - itemfield: z
+      recordfield: 852
+      recordsubfield: x
+
+and puts the value from the specified record field and subfield into the specified
+item field. Returns the modified item. Returns the unchanged field if no config
+is given.
+
+=cut
+
+sub item_values_from_record {
+
+    my ( $field, $record, $config ) = @_;
+
+    # Just return the field unharmed if there is no config
+    return $field if ! defined $config;
+
+    # Loop over all elements of the config
+    foreach my $fieldspec ( @{ $config } ) {
+
+        my $text;
+        # Get all the relevant fields
+        my @recordfields = $record->field( $fieldspec->{ 'recordfield' } );
+        my $count = 0;
+        # Loop over the fields
+        foreach my $recordfield ( @recordfields ) {
+            # Get all the subfields
+            my @recordsubfields = $recordfield->subfield( $fieldspec->{ 'recordsubfield' } );
+            # Loop over the subfields
+            foreach my $value ( @recordsubfields ) {
+                if ( $count > 0 ) {
+                    $text .= $fieldspec->{ 'delimiter' };
+                }
+                $text .= $value;
+                $count++;
+            }
+        }
+        # Add the subfield to the field
+        $field->add_subfields( $fieldspec->{ 'itemfield' }, $text );
+
+    }
+
+    return $field;
+
+}
+
 =head2 match_on_isbn
 
   my $got_match = match_on_isbn( $koha_record, $incoming_record, $debug );
