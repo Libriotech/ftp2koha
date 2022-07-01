@@ -17,7 +17,7 @@ use C4::Barcodes::ValueBuilder;
 use C4::Biblio qw( AddBiblio ModBiblio GetMarcFromKohaField );
 use Koha::Biblios;
 use Koha::Item;
-use Koha::DateUtils;
+use Koha::DateUtils qw( dt_from_string output_pref );
 
 use MARC::File::USMARC;
 use MARC::File::XML ( BinaryEncoding => 'utf8', RecordFormat => 'MARC21' );
