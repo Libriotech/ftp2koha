@@ -333,7 +333,7 @@ No matches so far, so we insert the active record as a new record.
                     say $position_data if $debug;
                     if ( $position_data eq $special->{'text'} ) {
                         ( $item, $itemdetails ) = _make_item( $special );
-                        $item = item_values_from_record( $item, $record, $config->{'item_values_from_record'} );
+                        $item = Util::item_values_from_record( $item, $record, $config->{'item_values_from_record'} );
                         last SPECIAL; # Make sure we only add an item for the first match
                     }
                 }
@@ -344,7 +344,7 @@ No matches so far, so we insert the active record as a new record.
                     $record->subfield( $special->{'field'}, $special->{'subfield'} ) =~ m/$special->{'text'}/gi
                 ) {
                     ( $item, $itemdetails ) = _make_item( $special );
-                    $item = item_values_from_record( $item, $record, $config->{'item_values_from_record'} );
+                    $item = Util::item_values_from_record( $item, $record, $config->{'item_values_from_record'} );
                     last SPECIAL; # Make sure we only add an item for the first match
                 }
             }
@@ -354,7 +354,7 @@ No matches so far, so we insert the active record as a new record.
         if ( $itemdetails eq '' ) {
             # The rest of the items get the default values
             ( $item, $itemdetails ) = _make_item( $config );
-            $item = item_values_from_record( $item, $record, $config->{'item_values_from_record'} );
+            $item = Util::item_values_from_record( $item, $record, $config->{'item_values_from_record'} );
         }
 
         # Check if we should pick a callnumber from the record
