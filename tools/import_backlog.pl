@@ -10,7 +10,7 @@ Uses the same config file as the main ftp2koha.pl script.
 
 =head1 SYNOPSIS
 
- perl import_backlog.pl -c /path/to/config.yaml --start 2022-05-17 --end 2022-06-01
+ perl import_backlog.pl --kohasite mykoha --start 2022-05-17 --end 2022-06-01 -v -d
 
 =cut
 
