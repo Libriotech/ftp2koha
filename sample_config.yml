@@ -123,7 +123,8 @@ item_values_from_record:
 
 ### Local Koha instance
 
-# Code for the framework the records should be imported with
+# Code for the framework the records should be imported with.
+# Leave empty (frameworkcode: "") to use the default framework.
 frameworkcode: ""
 
 ### Special item values
