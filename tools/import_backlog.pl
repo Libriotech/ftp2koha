@@ -51,7 +51,7 @@ while ( $start_t <= $end_t ) {
     my $filename = $start_t->strftime( $config->{ 'ftp_file' } );
     say "Working on $ymd $filename" if $verbose;
 
-    my $logfilepath = "/etc/koha/sites/$kohasite/ftp2koha/ftp2koha-$kohasite-$today-backlog-$ymd.log";
+    my $logfilepath = "/var/log/koha/$kohasite/ftp2koha-backlog-$today-$ymd.log";
 
     my $cmd = "sudo /usr/sbin/koha-shell -c \"perl $carp $script -c $configfile --debug --verbose --filename $filename\" $kohasite &> $logfilepath";
     say $cmd if $debug;
