@@ -43,7 +43,7 @@ my $dt = DateTime->now;
 my $date = $dt->ymd;
 
 # Get options
-my ( $config_file, $filename, $local_file, $test, $comment, $limit, $verbose, $debug ) = get_options();
+my ( $config_file, $filename, $local_file, $diff, $test, $comment, $limit, $verbose, $debug ) = get_options();
 
 =pod
 
@@ -527,7 +527,7 @@ sub _update_record {
     say "--- MERGED RECORD ---" if $verbose;
     say $record->as_formatted if $verbose;
 
-    if ( $biblio ) {
+    if ( $biblio && defined $diff && $diff == 1 ) {
         # Diff
         say "--- DIFF ---" if $debug;
         say diff \$biblio->metadata->record->as_formatted, \$record->as_formatted, { STYLE => "Text::Diff::Table" } if $debug;
@@ -652,6 +652,11 @@ date, or if the remote file always has the same name, regardless of the date.
 Use a local file for testing and development, or if you are fetching records by
 some other means than FTP.
 
+=item B<--diff>
+
+Log a diff between the record that was in Koha and the merged record that will
+be saved to Koha.
+
 =item B<-t, --test>
 
 Perform all steps, except the actual import of records. Also turns on verbose
@@ -688,6 +693,7 @@ sub get_options {
     my $config_file = '';
     my $filename    = '';
     my $local_file  = '';
+    my $diff        = '';
     my $test        = '';
     my $comment     = '';
     my $limit       = '';
@@ -699,6 +705,7 @@ sub get_options {
         'c|config=s'    => \$config_file,
         'f|filename=s'  => \$filename,
         'l|localfile=s' => \$local_file,
+        'diff'          => \$diff,
         't|test'        => \$test,
         'comment=s'     => \$comment,
         'limit=i'       => \$limit,
@@ -713,7 +720,7 @@ sub get_options {
     # Test mode should always be verbose
     $verbose = 1 if $test;
 
-    return ( $config_file, $filename, $local_file, $test, $comment, $limit, $verbose, $debug );
+    return ( $config_file, $filename, $local_file, $diff, $test, $comment, $limit, $verbose, $debug );
 
 }
 
