@@ -106,6 +106,12 @@ preserve_fields:
   - 852
   - 976
 
+# Remove 852 fields where the value of 852b is not in the list below. The value
+# on right of the colon should always be 1, for convenience.
+filter_on_852b:
+  A: 1
+  X: 1
+
 # Add fields to both new and old records (if the field does not already exist)
 add_fields:
   - field: 942
