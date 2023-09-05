@@ -392,6 +392,7 @@ No matches so far, so we insert the active record as a new record.
 
         # Import the record and the item into Koha
         my ( $biblionumber, $biblioitemnumber ) = AddBiblio( $record, $config->{'frameworkcode'} );
+        $MARC::File::XML::_load_args{BinaryEncoding} = 'utf-8';
         if ( $biblionumber ) {
             say "New record saved with biblionumber=$biblionumber" if $verbose;
             $summary->{'biblionumber'} = $biblionumber;
@@ -537,6 +538,7 @@ sub _update_record {
     unless ( $test ) {
 
         my $res = ModBiblio( $record, $biblionumber, $config->{'frameworkcode'} );
+        $MARC::File::XML::_load_args{BinaryEncoding} = 'utf-8';
         if ( $res == 1 ) {
             say "Record with biblionumber = $biblionumber was UPDATED" if $verbose;
         } else {
