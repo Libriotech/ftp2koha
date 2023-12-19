@@ -695,7 +695,7 @@ sub get_options {
     my $config_file = '';
     my $filename    = '';
     my $local_file  = '';
-    my $diff        = '';
+    my $diff        = 0;
     my $test        = '';
     my $comment     = '';
     my $limit       = '';
