@@ -24,7 +24,7 @@ use Pod::Usage;
 use Modern::Perl;
 binmode STDOUT, ":utf8";
 
-my $script = "/opt/ftp2koha/ftp2koha.pl";
+my $script = "/srv/ftp2koha/ftp2koha.pl";
 
 # Get options
 my ( $kohasite, $start, $end, $verbose, $debug ) = get_options();

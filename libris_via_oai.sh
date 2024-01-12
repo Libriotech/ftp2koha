@@ -52,5 +52,5 @@ if [ $ACTUALSIZE -le $MAXSIZE ]; then
 else
     # Process it 
     echo "Wrote $OUTFILE, $ACTUALSIZE bytes"
-    /usr/sbin/koha-shell -c "/usr/bin/perl /opt/ftp2koha/ftp2koha.pl --config $CONFIG --localfile $OUTFILE -v -d" $INSTANCE &> $LOGFILE
+    /usr/sbin/koha-shell -c "/usr/bin/perl /srv/ftp2koha/ftp2koha.pl --config $CONFIG --localfile $OUTFILE -v -d" $INSTANCE &> $LOGFILE
 fi
