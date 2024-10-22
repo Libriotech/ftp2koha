@@ -87,7 +87,7 @@ delete_fields:
 # Fields that sould be preserved (copied from the record in Koha to the incoming
 # record, replacing any fields of the same code in the incoming record). You
 # probably want to have at least 942 in this list, since this is a Koha specific
-# field that should be removed or overwritten by anything from the external source.
+# field that should not be removed or overwritten by anything from the external source.
 preserve_fields:
   - 942
   - 562
