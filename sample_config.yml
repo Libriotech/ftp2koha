@@ -84,6 +84,15 @@ delete_fields:
   - field: 034
   - field: 036
 
+# Go through all fields with the given field number. If there is a subfield with
+# the given code, and that subfield contains the given text, do not import the
+# field. Matching on text considers the whole field (not substrings), and is
+# not case sensitive.
+delete_fields_on_content:
+  - field: 650
+    subfield: 2
+    contains: qlit
+
 # Fields that sould be preserved (copied from the record in Koha to the incoming
 # record, replacing any fields of the same code in the incoming record). You
 # probably want to have at least 942 in this list, since this is a Koha specific

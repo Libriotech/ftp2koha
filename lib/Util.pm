@@ -338,6 +338,44 @@ sub delete_fields {
 
 }
 
+=head2
+
+Delete fields if given subfield contains a given string. Matching considers the
+whole field (not substrings), and is not case sensitive.
+
+Sample config:
+
+  delete_fields_on_content:
+    - field: 650
+      subfield: 2
+      contains: qlit
+
+=cut
+
+sub delete_fields_on_content {
+
+    my ( $record, $delete_fields, $debug ) = @_;
+
+    foreach my $check_field ( @{ $delete_fields } ) {
+
+        # Get the number of the fields we want to check
+        my $check_field_num = $check_field->{ 'field' };
+
+        # Get all the fields and loop over them
+        my @marc_fields = $record->field( $check_field_num );
+        foreach my $marc_field ( @marc_fields ) {
+            # Check if the subfield we are looking for is present and contains the string we are looking for
+            if ( $marc_field->subfield( $check_field->{ 'subfield' } ) && $marc_field->subfield( $check_field->{ 'subfield' } ) =~ /^$check_field->{ 'contains' }$/i ) {
+                $record->delete_field( $marc_field );
+            }
+        }
+
+    }
+
+    return $record;
+
+}
+
 =head2 filter_on_852b
 
 Takes a list of values (defined as a hash with 1 as values, for convenience):

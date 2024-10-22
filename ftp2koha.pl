@@ -498,6 +498,11 @@ sub _update_record {
     ## Delete fields that should be deleted from the incoming record
     $record = Util::delete_fields( $record, $config->{'delete_fields'}, $debug );
 
+    # Delete fields that should be deleted from the incoming record, if they contain a given value
+    if ( defined $config->{'delete_fields_on_content'} ) {
+        $record = Util::delete_fields_on_content( $record, $config->{'delete_fields_on_content'}, $debug );
+    }
+
     # Remove 852-fields that we do not want to keep
     $record = Util::filter_on_852b( $record, $config->{'filter_on_852b'}, $debug );
 
