@@ -34,7 +34,7 @@ isa_ok( $record1, 'MARC::Record' );
 $field1 = Util::item_values_from_record( $field1, $record1, undef );
 is( scalar $field1->subfields(), 3, 'still got 3 subfields' );
 
-# Call the sub with an real config
+# Call the sub with a real config
 
 $field1 = Util::item_values_from_record( $field1, $record1, $config->{'item_values_from_record'} );
 is( scalar $field1->subfields(), 4, 'got 4 subfields' );
