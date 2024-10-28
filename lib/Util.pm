@@ -98,6 +98,83 @@ sub item_values_from_record {
 
 }
 
+=head2 update_item_values_from_record
+
+Takes an itemnumber, a record and some config. Extracts data from the record and
+updates all existing items connected to the biblionumber with the data from the
+record. No new items are created.
+
+=cut
+
+sub update_item_values_from_record {
+
+    my ( $biblionumber, $record, $config, $debug ) = @_;
+
+    # Find the items
+    my $items = Koha::Items->search({ biblionumber => $biblionumber });
+    while ( my $item = $items->next ) {
+        $item = update_item_from_record( $item, $record, $config, $debug );
+        $item->store;
+    }
+
+}
+
+=head2 update_item_from_record
+
+Take one item and one record, and update values in the item with data from the
+record, as specified by the config.
+
+Sample config:
+
+  item_values_from_record:
+    - itemfield: z
+      item_db_field: itemnotes
+      recordfield: 852
+      recordsubfield: x
+      delimiter: " | "
+
+=cut
+
+sub update_item_from_record {
+
+    my ( $item, $record, $config, $debug ) = @_;
+
+# say "In update_item_from_record";
+# say Dumper $config;
+
+    # Just return the field unharmed if there is no config
+    return $item if ! defined $config;
+
+    # Loop over all fields in the config
+    foreach my $config_field ( @{ $config } ) {
+
+        my $text;
+        # Get all the relevant fields
+        my @recordfields = $record->field( $config_field->{ 'recordfield' } );
+        my $count = 0;
+        # Loop over the fields
+        foreach my $recordfield ( @recordfields ) {
+            # Get all the subfields
+            my @recordsubfields = $recordfield->subfield( $config_field->{ 'recordsubfield' } );
+            # Loop over the subfields
+            foreach my $value ( @recordsubfields ) {
+                if ( $count > 0 ) {
+                    $text .= $config_field->{ 'delimiter' };
+                }
+                $text .= $value;
+                $count++;
+            }
+        }
+        # Update the item
+        my $item_db_field = $config_field->{ 'item_db_field' };
+        $item->$item_db_field( $text );
+
+    }
+
+    return $item;
+
+}
+
 =head2 match_on_isbn
 
   my $got_match = match_on_isbn( $koha_record, $incoming_record, $debug );

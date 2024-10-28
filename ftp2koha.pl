@@ -484,6 +484,7 @@ sub _update_record {
     say "biblionumber=$biblionumber" if $verbose;
     $summary->{'biblionumber'} = $biblionumber;
 
+    # Find the existing record in Koha, based on biblionumber
     say "--- KOHA RECORD ---" if $verbose;
     my $biblio = Util::find_biblio( $biblionumber );
     if ( $biblio ) {
@@ -505,6 +506,9 @@ sub _update_record {
 
     # Remove 852-fields that we do not want to keep
     $record = Util::filter_on_852b( $record, $config->{'filter_on_852b'}, $debug );
+
+    # Update item fields from record data
+    Util::update_item_values_from_record( $biblionumber, $record, $config->{'update_item_values_from_record'}, $debug );
 
     if ( $biblio ) {
         ## Preserve fields that should be preserved

@@ -130,11 +130,22 @@ add_fields:
 # Add item subfields based on fields in the record. This example will create
 # 952$z, with a value concatenated from all 852$x fields in the record. If there
 # are multiple 852$x, they will be separated by the "delimiter" string.
+# In other words, this will take info from the record's "recordfield" and
+# "recordsubfield" and put it in the "itemfield" subfield of 952s in the Koha
+# record.
+# Remember to include spacing in the "delimiter". If "delimiter" is given as
+# "|", the result will be "a|b".
 item_values_from_record:
   - itemfield: z
+    item_db_field: itemnotes
     recordfield: 852
     recordsubfield: x
     delimiter: " | "
+
+# Values 1 | 0
+# Update items based on the mapping in item_values_from_record when updated
+# records are received.
+update_item_values_from_record: 1
 
 ### Local Koha instance
 
