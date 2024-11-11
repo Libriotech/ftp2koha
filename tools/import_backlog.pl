@@ -53,7 +53,7 @@ while ( $start_t <= $end_t ) {
 
     my $logfilepath = "/var/log/koha/$kohasite/ftp2koha-backlog-$today-$ymd.log";
 
-    my $cmd = "sudo /usr/sbin/koha-shell -c \"perl $carp $script -c $configfile --debug --verbose --filename $filename\" $kohasite &> $logfilepath";
+    my $cmd = "sudo /usr/sbin/koha-shell -c \"perl $carp $script -c $configfile --debug --verbose --filename $filename\" $kohasite > $logfilepath 2>&1";
     say $cmd if $debug;
     `$cmd`;
 
