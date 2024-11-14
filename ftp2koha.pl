@@ -508,7 +508,9 @@ sub _update_record {
     $record = Util::filter_on_852b( $record, $config->{'filter_on_852b'}, $debug );
 
     # Update item fields from record data
-    Util::update_item_values_from_record( $biblionumber, $record, $config->{'update_item_values_from_record'}, $debug );
+    if ( defined $config->{'update_item_values_from_record'} && $config->{'update_item_values_from_record'} == 1 ) {
+        Util::update_item_values_from_record( $biblionumber, $record, $config->{'item_values_from_record'}, $debug );
+    }
 
     if ( $biblio ) {
         ## Preserve fields that should be preserved
