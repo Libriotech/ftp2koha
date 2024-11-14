@@ -49,7 +49,7 @@ sub make_fields {
 
 =head2 item_values_from_record
 
-Takes a field, a record and some config like this:
+Takes a hashref of item data, a record and some config like this:
 
   item_values_from_record:
     - itemfield: z
@@ -57,7 +57,7 @@ Takes a field, a record and some config like this:
       recordsubfield: x
 
 and puts the value from the specified record field and subfield into the specified
-item field. Returns the modified item. Returns the unchanged field if no config
+item field. Returns the modified hashref. Returns the unchanged hashref if no config
 is given.
 
 =cut
@@ -90,7 +90,8 @@ sub item_values_from_record {
             }
         }
         # Add the subfield to the field
-        $field->add_subfields( $fieldspec->{ 'itemfield' }, $text );
+        my $itemfield = $fieldspec->{ 'itemfield' };
+        $field->{ $itemfield } = $text;
 
     }
 
