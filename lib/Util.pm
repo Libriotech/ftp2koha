@@ -90,7 +90,7 @@ sub item_values_from_record {
             }
         }
         # Add the subfield to the field
-        my $itemfield = $fieldspec->{ 'itemfield' };
+        my $itemfield = $fieldspec->{ 'item_db_field' };
         $field->{ $itemfield } = $text;
 
     }
